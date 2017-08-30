@@ -1,3 +1,10 @@
+" guard {{{1
+
+if exists('g:loaded_comment')
+    finish
+endif
+let g:loaded_comment = 1
+
 " Commands {{{1
 
 " This command could be useful when we're working from the command-line

@@ -1,3 +1,10 @@
+" guard {{{1
+
+if exists('g:auto_loaded_comment')
+    finish
+endif
+let g:auto_loaded_comment = 1
+
 " Autocmd {{{1
 
 " Currently, uncommenting an (indented) empty line leaves undesired whitespace.
@@ -259,4 +266,3 @@ fu! comment#toggle(...) abort range "{{{1
         doautocmd <nomodeline> User CommentTogglePost
     endif
 endfu
-
