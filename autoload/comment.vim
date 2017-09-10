@@ -246,7 +246,11 @@ fu! comment#toggle(type, ...) abort "{{{1
         endif
 
         let line = substitute(line, pattern, replacement, '')
-        " if condition
+
+       " if (s:what ==# 'code' || Is_commented_text(line))
+      " \&& (s:what ==# 'text' || Is_commented_code(line))
+        " if !(s:what ==# 'text' && Is_commented_code(line))
+       " \&& !(s:what ==# 'code' && Is_commented_text(line))
             call setline(l:lnum, line)
         " endif
     endfor
