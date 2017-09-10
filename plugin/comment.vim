@@ -1,4 +1,15 @@
-" guard {{{1
+" TODO:
+" `gc` should ignore code lines.
+" `gC` should ignore text lines.
+
+" TODO:
+" `ZD` should consider the lines as text by default. Currently, it doesn't if
+" we've just used `gC`.
+
+" TODO:
+" Is it possible to hide comment leaders, without losing syntax highlighting?
+
+" Guard {{{1
 
 if exists('g:loaded_comment')
     finish
@@ -20,17 +31,33 @@ let g:loaded_comment = 1
 "
 " Alternatively, we could use `:norm gc{object}`, but in a script,
 " `:CommentToggle` is more readable.
-com! -range -bar CommentToggle <line1>,<line2>call comment#toggle()
+
+com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
 
-nno  <silent>  gc     :<c-u>set opfunc=comment#toggle<cr>g@
-nno  <silent>  gcc    :<c-u>set opfunc=comment#toggle<bar>exe 'norm! g@'.v:count1.'_'<cr>
-xno  <silent>  gc     :call comment#toggle()<cr>
+nno  <silent>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gcc    :<c-u>call comment#what('text')
+                      \<bar>set opfunc=comment#toggle
+                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  gC     :<c-u>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  gC     :<c-u>call comment#object(0)<cr>
+ono  <silent>  io     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  io     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gcu    gcgC
+nmap <silent>  gcu    gcio
 "                │
 "                └─ Uncomment text-object
+
+
+
+nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gCC    :<c-u>call comment#what('code')
+                      \<bar>set opfunc=comment#toggle
+                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+
+ono  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+
+nmap <silent>  gCu    gCiO

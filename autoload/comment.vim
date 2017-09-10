@@ -5,7 +5,7 @@ if exists('g:auto_loaded_comment')
 endif
 let g:auto_loaded_comment = 1
 
-" Autocmd {{{1
+" autocmd {{{1
 
 " Currently, uncommenting an (indented) empty line leaves undesired whitespace.
 " Remove them.
@@ -13,7 +13,15 @@ let g:auto_loaded_comment = 1
 augroup my_comment_toggle
     au!
     au User CommentTogglePost call s:remove_trailing_wsp()
+                           \| call s:remove_duplicate_comment_leader()
 augroup END
+
+fu! s:remove_duplicate_comment_leader() abort
+    sil! '[,']s/^\s*#@\s*\zs# //
+    sil! '[,']s/^\s*\zs#@\s*#$/#@/
+
+    sil! '[,']s/^\s*@\s*//
+endfu
 
 fu! s:adapt_commentstring(line, l, r) abort " {{{1
     let [line, l_, r_] = [a:line, a:l, a:r]
@@ -33,6 +41,10 @@ fu! s:get_commentstring() abort "{{{1
     "     - the end of a comment string;       e.g. for html: ` -->`
     "
     " To do so it relies on the template `&commenstring`.
+
+    if get(s:, 'what', 'text') ==# 'code'
+        return [ split(&cms, '%s', 1)[0].'@ ' ] + [ split(&cms, '%s', 1)[1] ]
+    endif
 
     " To make the commented text more readable, we don't want the item `%s` to be
     " directly preceded by a non whitespace.
@@ -63,12 +75,13 @@ endfu
 fu! comment#object(inner) abort " {{{1
     let [l_, r_]      = s:get_commentstring()
     let [l, r]        = [l_, r_]
-    let boundaries    = [line('.')+1, line('.')-2]
+    let boundaries    = [ line('.')+1, line('.')-2 ]
 
-    for [index, dir, limit, line] in [[0, -1, 1, ''], [1, 1, line('$'), '']]
+    for [ index, dir, limit, line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
 
         " line !~ '\S'    ⇔    line =~ '^\s*$'
-        while s:is_commented(line, l, r) || line !~ '\S' && boundaries[index] != limit
+        while s:is_commented(line, l, r)
+        \|| ( line !~ '\S' && boundaries[index] != limit )
 
             let boundaries[index] += dir
             let line               = getline(boundaries[index]+dir)
@@ -128,22 +141,20 @@ fu! s:remove_trailing_wsp() abort "{{{1
     call winrestview(view)
 endfu
 
-fu! comment#toggle(...) abort range "{{{1
+fu! comment#toggle(type, ...) abort "{{{1
     " Define the range of lines to (un)comment.
 
-    "  ┌─ the function received an argument: `type`
-    "  │
-    if a:0
-        let [lnum1, lnum2] = [line("'["), line("']")]
-
-    " no argument was received: `:CommentToggle` was executed
+    if a:type ==# 'Ex'
+        let [lnum1, lnum2] = [a:1, a:2]
+    elseif a:type ==# 'visual'
+        let [lnum1, lnum2] = [line("'<"), line("'>")]
     else
-        let [lnum1, lnum2] = [a:firstline, a:lastline]
+        let [lnum1, lnum2] = [line("'["), line("']")]
     endif
 
     " Get the original comment string.
-    " We wrap the code in a `try` structure to handle the case where the
-    " commentstring is empty.
+    " We wrap the code in a `try` conditional to handle the case where the
+    " comment string is empty.
     " It raises an error, and there's nothing the operator can do without
     " a comment string.
     " So, if `s:get_commentstring()` fails to return sth, we stop immediately.
@@ -265,4 +276,8 @@ fu! comment#toggle(...) abort range "{{{1
     if exists('#User#CommentTogglePost')
         doautocmd <nomodeline> User CommentTogglePost
     endif
+endfu
+
+fu! comment#what(what) abort "{{{1
+    let s:what = a:what
 endfu
