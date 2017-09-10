@@ -246,7 +246,9 @@ fu! comment#toggle(type, ...) abort "{{{1
         endif
 
         let line = substitute(line, pattern, replacement, '')
-        call setline(l:lnum, line)
+        " if condition
+            call setline(l:lnum, line)
+        " endif
     endfor
 
     " We execute all the autocmds using the event `User` and the filter

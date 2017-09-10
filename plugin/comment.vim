@@ -2,12 +2,15 @@
 " `gc` should ignore code lines.
 " `gC` should ignore text lines.
 
+" FIXME:
+" In `s:remove_trailing_wsp()`, we shouldn't trim trailing whitespace twice.
+" Find a way to detect the proper range.
+" Or better, get rid of `s:remove_trailing_wsp()`:  need to tweak `toggle()`
+" for that.
+
 " TODO:
 " `ZD` should consider the lines as text by default. Currently, it doesn't if
 " we've just used `gC`.
-
-" TODO:
-" Is it possible to hide comment leaders, without losing syntax highlighting?
 
 " Guard {{{1
 
