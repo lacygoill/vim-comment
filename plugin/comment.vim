@@ -1,9 +1,4 @@
 " TODO:
-" `ic` should select a range of consecutive commented lines of text.
-" It should stop when it finds a commented line of code.
-" Currently, it doesn't.
-
-" TODO:
 " Invert the operators `gc` and `gC` (and the objects `ic`, `iC`).
 " `gc` is easier to type and we'll (un)comment code more frequently than text.
 " Do it once we've concealed `@` in Vim files.
@@ -13,6 +8,19 @@
 " you may constantly hit the wrong mapping.
 "
 " Think more about it.
+" Edit:
+" Ok, I've thought about it, and I think it may still be worth a try.
+" Whatever we decide to do, be consistent with the mappings `yc`, `yC`, `myc`, `myC`.
+
+" TODO:
+" Integrate `myfuncs#search_comment()` (["  ]").
+" Tweak the code so that it ignores commented code. Only commented text.
+" Should we also integrate `yc` &friends?
+
+" FIXME:
+" Hit `viC` on the line `let s:some_var = 42`.
+" The lines above are selected. They shouldn't.
+let s:some_var = 42
 
 " Guard {{{1
 
@@ -54,28 +62,26 @@ nmap           ZDD    Zdd
 
 " toggle code {{{2
 
-nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gCC    :<c-u>call comment#what('code')
-                      \<bar>set opfunc=comment#toggle
+nno  <silent>  gc     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gc     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gcc    :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+ono  <silent>  ic     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  ic     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gCu    gCiC
+nmap <silent>  gcu    gcic
 
 " toggle text {{{2
 
-nno  <silent>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gcc    :<c-u>call comment#what('text')
-                      \<bar>set opfunc=comment#toggle
+nno  <silent>  gC     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gC     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gCC    :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
+ono  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gcu    gcic
+nmap <silent>  gCu    gCiC
 "                │
 "                └─ Uncomment text-object

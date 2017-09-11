@@ -84,26 +84,26 @@ fu! comment#object(inner) abort "{{{2
     let [l, r]        = [l_, r_]
     let boundaries    = [ line('.')+1, line('.')-2 ]
 
-    for [ index, dir, limit, line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
-        while s:is_commented(line, l, r)
-        \||   line !~ '\S' && boundaries[index] != limit
+    " We consider a line to be in a comment object iff it's:
+    "
+    "         • commented
+    "         • not the start/end of a fold
+    "         • not a commented line of code while we're working on text
+    " … OR:
+    "         • an empty line
+    let Line_is_in_comment_object = { -> s:is_commented(line, l, r)
+                                \&&      match(line, '{{{\|}}}') == -1
+                                \&&      !(s:toggle_what ==# 'text' && s:is_commented(line, l.'@', r))
+                                \||      line !~ '\S' && boundaries[which] != limit
+                                \}
 
-            let boundaries[index] += dir
-            let line               = getline(boundaries[index]+dir)
+    "     ┌─ 0 or 1:  upper or lower boundary
+    "     │
+    for [ which, dir, limit, line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
+        while Line_is_in_comment_object()
+            let boundaries[which] += dir
+            let line               = getline(boundaries[which]+dir)
             let [l, r]             = s:adapt_commentleader(line,l_,r_)
-
-            " a comment shouldn't span across several folds
-            let pat = '{{{\|}}}'
-            if dir == -1 && match(getline(boundaries[index]), pat) != -1
-                " cancel last decrementation
-                let boundaries[index] += 1
-                break
-            elseif dir == 1 && match(getline(boundaries[index]), pat) != -1
-                " cancel last incrementation
-                let boundaries[index] -= 1
-                break
-            endif
-
         endwhile
     endfor
 
@@ -126,18 +126,16 @@ fu! comment#object(inner) abort "{{{2
         endwhile
     endif
 
-    " Check that upper boundary is lower than lower boundary.
-    " If it's not, something went wrong, and we shouldn't select anything.
-    if boundaries[0] <= boundaries[1]
-        " Position the cursor on the 1st line of the comment object.
-        exe 'norm! ' . boundaries[0] . 'G'
-        if foldlevel(line('.')) > 0
-            " If there're folds on the current line, open them.
-            exe 'norm! ' . foldlevel(line('.')) . 'zo'
-        endif
-        " Select the comment object.
-        exe 'norm! V' . boundaries[1] . 'G'
+    " Check that upper boundary comes before lower boundary.
+    " If it does not, something went wrong, and we shouldn't select anything.
+    if boundaries[0] > boundaries[1]
+        return
     endif
+
+    " position the cursor on the 1st line of the comment object
+    exe 'norm! '.boundaries[0].'G'
+    " select the comment object
+    exe 'norm! V'.boundaries[1].'G'
 endfu
 
 fu! s:remove_trailing_wsp() abort "{{{2
