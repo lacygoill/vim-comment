@@ -1,9 +1,18 @@
+fu! s:is_commented_text(line) abort
+    return match(a:line, '^\s*'.s:cms.'@\@!') != -1
+endfu
+fu! s:is_commented_code(line) abort
+    return match(a:line, '^\s*'.s:cms.'@') != -1
+endfu
+
 " guard {{{1
 
-if exists('g:auto_loaded_comment')
-    finish
-endif
-let g:auto_loaded_comment = 1
+" TODO: restore the guard
+
+" if exists('g:auto_loaded_comment')
+"     finish
+" endif
+" let g:auto_loaded_comment = 1
 
 " autocmd {{{1
 
@@ -13,15 +22,7 @@ let g:auto_loaded_comment = 1
 augroup my_comment_toggle
     au!
     au User CommentTogglePost call s:remove_trailing_wsp()
-                           \| call s:remove_duplicate_comment_leader()
 augroup END
-
-fu! s:remove_duplicate_comment_leader() abort
-    sil! '[,']s/^\s*#@\s*\zs# //
-    sil! '[,']s/^\s*\zs#@\s*#$/#@/
-
-    sil! '[,']s/^\s*@\s*//
-endfu
 
 fu! s:adapt_commentstring(line, l, r) abort " {{{1
     let [line, l_, r_] = [a:line, a:l, a:r]
@@ -34,6 +35,18 @@ fu! s:adapt_commentstring(line, l, r) abort " {{{1
     return [l_, r_]
 endfu
 
+fu! comment#duplicate(type) abort "{{{1
+    if count([ 'v', 'V', "\<c-v>" ], a:type)
+        norm! gvygv
+        norm gc
+    else
+        norm! '[y']
+        '[,']CommentToggle
+    endif
+
+    norm! `]]p
+endfu
+
 fu! s:get_commentstring() abort "{{{1
     " This function should return a list of 2 strings:
     "
@@ -42,7 +55,7 @@ fu! s:get_commentstring() abort "{{{1
     "
     " To do so it relies on the template `&commenstring`.
 
-    if get(s:, 'what', 'text') ==# 'code'
+    if get(s:, 'toggle_what', 'text') ==# 'code'
         return [ split(&cms, '%s', 1)[0].'@ ' ] + [ split(&cms, '%s', 1)[1] ]
     endif
 
@@ -69,7 +82,7 @@ fu! s:is_commented(line, l, r) abort "{{{1
     let line   = matchstr(a:line, '\S.*\s\@<!')
     let [l, r] = [a:l, a:r]
 
-    return !stridx(line, l) && line[strlen(line)-strlen(r):] ==# r
+    return stridx(line, l) == 0 && line[strlen(line)-strlen(r):] ==# r
 endfu
 
 fu! comment#object(inner) abort " {{{1
@@ -164,6 +177,7 @@ fu! comment#toggle(type, ...) abort "{{{1
         return
     endtry
 
+    let s:cms  = split(&cms, '%s')[0]
     " Decide what to do: comment or uncomment?
     " The decision is stored in the variable `uncomment`.
     " `0` means the operator will comment the range of lines.
@@ -175,9 +189,28 @@ fu! comment#toggle(type, ...) abort "{{{1
         " whitespace placed between the text and the comment, if needed.
         let [l, r] = s:adapt_commentstring(line, l_, r_)
 
-        " Condition to comment a range of lines:
-        " one of them must be non-empty and not commented.
-        if line =~ '\S' && !s:is_commented(line, l, r)
+        " To comment a range of lines, one of them must be:
+        "
+        "         • not empty
+        "         • not commented
+        "         • not a commented line of text
+        "
+        " TODO:
+        " Why the need for the 3rd condition?
+        " How can a line be not commented and a commented line of text at the
+        " same time?
+        " It could be a commented line of code.
+        "
+        " What if the line is a commented line of text.
+        " Don't we need a similar condition for it?
+        " No. Because, if the line is not empty, and commented … to finish
+        "
+        " Refactor this part of the code. Not clear.
+        " Do we still need `s:is_commented()`?
+
+        if line =~ '\S'
+       \&& !s:is_commented(line, l, r)
+       \&& !s:is_commented_text(line)
             let uncomment = 0
         endif
     endfor
@@ -191,7 +224,7 @@ fu! comment#toggle(type, ...) abort "{{{1
     "
     " We want all of them to be aligned under the first one.
     " To do this, we need to know the level of indentation of the first line.
-    let indent   = matchstr(getline(lnum1), '^\s*')
+    let indent = matchstr(getline(lnum1), '^\s*')
     for l:lnum in range(lnum1,lnum2)
         let line = getline(l:lnum)
         let [l, r] = s:adapt_commentstring(line, l_, r_)
@@ -241,19 +274,24 @@ fu! comment#toggle(type, ...) abort "{{{1
             " let replacement = '\=l . submatch(0) . r'
             let replacement = '\=!empty(submatch(0)) ? l.submatch(0).r : indent.l[:-2].r'
             "                                                                       │
-            "                                                                       └── remove space
-            "                                                                           after comment character
+            "                                                        remove space  ─┘
+            "                                             after comment character
         endif
 
-        let line = substitute(line, pattern, replacement, '')
-
-       " if (s:what ==# 'code' || Is_commented_text(line))
-      " \&& (s:what ==# 'text' || Is_commented_code(line))
-        " if !(s:what ==# 'text' && Is_commented_code(line))
-       " \&& !(s:what ==# 'code' && Is_commented_text(line))
+        " Don't do anything if the line is:
+        "
+        "         • empty
+        "         • commented code, but we want to toggle text
+        "         • commented text, but we want to toggle code
+        if    line =~# '^\s*$'
+       \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
+       \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
+        else
+            let line = substitute(line, pattern, replacement, '')
             call setline(l:lnum, line)
-        " endif
+        endif
     endfor
+    unlet! s:cms
 
     " We execute all the autocmds using the event `User` and the filter
     " `CommentTogglePost`.
@@ -284,6 +322,6 @@ fu! comment#toggle(type, ...) abort "{{{1
     endif
 endfu
 
-fu! comment#what(what) abort "{{{1
-    let s:what = a:what
+fu! comment#what(this) abort "{{{1
+    let s:toggle_what = a:this
 endfu

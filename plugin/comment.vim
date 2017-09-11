@@ -1,6 +1,7 @@
 " TODO:
-" `gc` should ignore code lines.
-" `gC` should ignore text lines.
+" `io` should select a range of consecutive commented lines of text.
+" It should stop when it finds a commented line of code.
+" Currently, it doesn't.
 
 " FIXME:
 " In `s:remove_trailing_wsp()`, we shouldn't trim trailing whitespace twice.
@@ -9,8 +10,8 @@
 " for that.
 
 " TODO:
-" `ZD` should consider the lines as text by default. Currently, it doesn't if
-" we've just used `gC`.
+" `ZD` should consider the lines as code by default. Currently, it doesn't if
+" we've just used `gc`.
 
 " Guard {{{1
 
@@ -64,3 +65,13 @@ ono  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(v:
 xno  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
 nmap <silent>  gCu    gCiO
+
+
+
+nno <silent> Zd     :<c-u>set opfunc=comment#duplicate<cr>g@
+nno <silent> Zdd    :<c-u>set opfunc=comment#duplicate<bar>exe 'norm! '.v:count1.'g@_'<cr>
+xno <silent> Zd     :<c-u>call comment#duplicate(visualmode())<cr>
+
+nmap ZD  Zd
+xmap ZD  Zd
+nmap ZDD Zdd
