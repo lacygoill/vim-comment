@@ -169,9 +169,11 @@ fu! comment#toggle(type, ...) abort "{{{2
     "    └─ comment leader (modified for code if needed, by prefixing it with `@`)
 
     " Decide what to do:   comment or uncomment?
-    " The decision is stored in the variable `uncomment`.
-    " `0` means the operator will comment the range of lines.
-    " `2` "                       uncomment   "
+    " The decision is stored in the variable `uncomment`:
+    "
+    "         • 0 = the operator will comment    the range of lines
+    "         • 2 = "                 uncomment  "
+
     let uncomment = 2
     for l:lnum in range(lnum1, lnum2)
         let line = getline(l:lnum)

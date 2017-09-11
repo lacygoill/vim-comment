@@ -3,6 +3,17 @@
 " It should stop when it finds a commented line of code.
 " Currently, it doesn't.
 
+" TODO:
+" Invert the operators `gc` and `gC` (and the objects `ic`, `iC`).
+" `gc` is easier to type and we'll (un)comment code more frequently than text.
+" Do it once we've concealed `@` in Vim files.
+"
+" Actually, it may be a bad idea, because when you use the code from someone
+" else, they won't use `@`. So, when you will want to uncomment their code,
+" you may constantly hit the wrong mapping.
+"
+" Think more about it.
+
 " Guard {{{1
 
 if exists('g:loaded_comment')
