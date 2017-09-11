@@ -7,10 +7,10 @@ endfu
 
 " guard {{{1
 
-if exists('g:auto_loaded_comment')
+if exists('g:autoloaded_comment')
     finish
 endif
-let g:auto_loaded_comment = 1
+let g:autoloaded_comment = 1
 
 " functions {{{1
 fu! s:adapt_commentleader(line, l_, r_) abort "{{{2
@@ -80,11 +80,21 @@ fu! s:is_commented(line, l, r) abort "{{{2
 endfu
 
 fu! comment#object(op_is_c) abort "{{{2
-    let [l_, r_]   = s:get_commentleader()
-    let [l, r]     = [l_, r_]
+    let [ l_, r_ ] = s:get_commentleader()
+    let [ l, r ]   = [ l_, r_ ]
+    " TODO:
+    " Why +1 and -2?
+    "
+    " There's no issue with the condition:
+    "
+    "         boundaries[which] != limit
+    "
+    " Because:
+    "         line('.') + 1 = 1          ⇒  line('.') = 0                ✘
+    "         line('.') - 2 = line('$')  ⇒  line('.') = line('$') + 2    ✘
     let boundaries = [ line('.')+1, line('.')-2 ]
 
-    " We consider a line to be in a comment object iff it's:
+    " We consider a line to be in a comment object iff it's:{{{
     "
     "         • commented
     "         • not the start/end of a fold
@@ -106,6 +116,7 @@ fu! comment#object(op_is_c) abort "{{{2
     "           new non-existent lines.
     "           Hence:
     "                   boundaries[which] != limit
+"}}}
     let Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
                              \&&      match(next_line, '{{{\|}}}') == -1
                              \&&      !(s:toggle_what ==# 'text' && s:is_commented(next_line, l.'@', r))
@@ -115,13 +126,15 @@ fu! comment#object(op_is_c) abort "{{{2
 
     "     ┌─ 0 or 1:  upper or lower boundary
     "     │
-    for [ which, dir, limit, next_line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
+    for [ which, dir, limit, next_line ]
+  \ in      [ [ 0, -1, 1, getline('.') ],
+  \           [ 1, 1, line('$'), getline(line('.')-1) ] ]
         while Next_line_is_in_object()
             " the test was successful so (inc|dec)rement the boundary
             let boundaries[which] += dir
             " update `line`, `l`, `r` before next test
             let next_line = getline(boundaries[which]+dir)
-            let [l, r]    = s:adapt_commentleader(next_line,l_,r_)
+            let [l, r]    = s:adapt_commentleader(next_line, l_, r_)
         endwhile
     endfor
 
@@ -129,16 +142,15 @@ fu! comment#object(op_is_c) abort "{{{2
     "  │            ┌─ OR the object doesn't end at the very end of the buffer
     "  │            │
     if a:op_is_c || boundaries[1] != line('$')
-        " make sure there's no empty lines at the beginning of the object by
-        " incrementing the upper boundary as long as necessary
+        " make sure there's no empty lines at the BEGINNING of the object
+        " by incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
             let boundaries[0] += 1
         endwhile
     endif
 
     if a:op_is_c
-        " make sure there's no empty lines at the end of the object by
-        " decrementing the lower boundary as long as necessary
+        " make sure there's no empty lines at the END of the object
         while getline(boundaries[1]) !~ '\S'
             let boundaries[1] -= 1
         endwhile
@@ -154,15 +166,6 @@ fu! comment#object(op_is_c) abort "{{{2
     exe 'norm! '.boundaries[0].'G'
     " select the object
     exe 'norm! V'.boundaries[1].'G'
-endfu
-
-fu! s:remove_trailing_wsp() abort "{{{2
-    let view = winsaveview()
-
-    sil! keepj keepp '[,']s/^\s\+$//
-    sil! keepj keepp '<,'>s/^\s\+$//
-
-    call winrestview(view)
 endfu
 
 fu! comment#toggle(type, ...) abort "{{{2
@@ -225,7 +228,8 @@ fu! comment#toggle(type, ...) abort "{{{2
         " No. Because, if the line is not empty, and commented … to finish
         "
         " Refactor this part of the code. Not clear.
-        " Do we still need `s:is_commented()`?
+        " Now that we use `s:is_commented_text()` and `s:is_commented_code()`,
+        " do we still need `s:is_commented()`?
 
         if line =~ '\S'
        \&& !s:is_commented(line, l, r)

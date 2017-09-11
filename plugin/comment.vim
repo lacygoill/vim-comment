@@ -18,9 +18,30 @@
 " Should we also integrate `yc` &friends?
 
 " FIXME:
+" In `~/bin/awk/histogram.awk`, right under `draw last bar`, hit `vic`.
+" Nothing is selected. 4 lines should be selected.
+" On the empty line 87, hit `viC`. 7 lines should be selected. Only 4 are.
+"
 " Hit `viC` on the line `let s:some_var = 42`.
 " The lines above are selected. They shouldn't.
+" It's fixed. For now.
 let s:some_var = 42
+
+" FIXME:
+" If we select 2 paragraphs separated by an empty line, and hit `gC`, the
+" empty line isn't commented. Do we want it to be commented.
+"
+" Pro: easier to select both commented paragraph with `vip`.
+"
+" Con: ugly empty commented line
+"      somewhat useless if we have a properly implemented object (`viC`)
+"      need to re-add a lot of code we've deleted
+"      need to remove trailing whitespace, after uncommenting empty line
+"
+" Suggestion:
+" Maybe we should reverse `ic` and `iC` (as well as the other mappings),
+" because `ic` is easier to type, and maybe we'll select commented text
+" more often than commented code.
 
 " Guard {{{1
 
