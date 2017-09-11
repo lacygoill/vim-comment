@@ -1,8 +1,8 @@
 fu! s:is_commented_text(line) abort
-    return match(a:line, '^\s*'.s:cms.'@\@!') != -1
+    return match(a:line, '^\s*'.s:cml.'@\@!') != -1
 endfu
 fu! s:is_commented_code(line) abort
-    return match(a:line, '^\s*'.s:cms.'@') != -1
+    return match(a:line, '^\s*'.s:cml.'@') != -1
 endfu
 
 " guard {{{1
@@ -22,9 +22,10 @@ augroup my_comment_toggle
     au User CommentTogglePost call s:remove_trailing_wsp()
 augroup END
 
-fu! s:adapt_commentleader(line, l, r) abort " {{{1
-    let [line, l_, r_] = [a:line, a:l, a:r]
-    let [l, r]         = [l_[0:-2], r_[1:]]
+" functions {{{1
+fu! s:adapt_commentleader(line, l_, r_) abort " {{{2
+    let [line, l_, r_] = [ a:line,   a:l_,   a:r_ ]
+    let [l, r]         = [ l_[0:-2], r_[1:]       ]
 
     if !s:is_commented(line, l_, r_) && s:is_commented(line, l, r)
         return [l, r]
@@ -33,7 +34,7 @@ fu! s:adapt_commentleader(line, l, r) abort " {{{1
     return [l_, r_]
 endfu
 
-fu! comment#duplicate(type) abort "{{{1
+fu! comment#duplicate(type) abort "{{{2
     if count([ 'v', 'V', "\<c-v>" ], a:type)
         norm! gvygv
         norm gc
@@ -45,27 +46,27 @@ fu! comment#duplicate(type) abort "{{{1
     norm! `]]p
 endfu
 
-fu! s:get_commentleader() abort "{{{1
+fu! s:get_commentleader() abort "{{{2
     " This function should return a list of 2 strings:
     "
-    "     • the beginning of a comment string; e.g. for vim: `" `
-    "     • the end of a comment string;       e.g. for html: ` -->`
+    "     • the beginning of a comment string; e.g. for vim:    `" `
+    "     • the end of a comment string;       e.g. for html:   ` -->`
     "
     " To do so it relies on the template `&commenstring`.
+
+    " if we operate on lines of code, make sure the comment leader ends with `@`
+    let cms = get(s:, 'toggle_what', 'text') ==# 'code'
+           \?     substitute(&l:cms, '\ze%s', '@', '')
+           \:     &l:cms
 
     " make sure there's a space between the comment leader and the comment:
     "         "%s   →   " %s
     " more readable
-    let cms = substitute(&l:cms, '\S\zs\ze%s', ' ', '')
+    let cms = substitute(cms, '\S\zs\ze%s', ' ', '')
 
     " make sure there's a space between the comment and the end-comment leader
     "         <-- %s-->    →    <-- %s -->
     let cms = substitute(cms,'%s\zs\ze\S', ' ', '')
-
-    " if we operate on lines of code, make sure the comment leader ends with `@`
-    if get(s:, 'toggle_what', 'text') ==# 'code'
-        let cms = substitute(cms, '\ze %s', '@', '')
-    endif
 
     " return the comment leader, and the possible end-comment leader,
     " through a list of 2 items
@@ -75,14 +76,14 @@ fu! s:get_commentleader() abort "{{{1
     "                          after `%s` (in this case, the 2nd item will be '')
 endfu
 
-fu! s:is_commented(line, l, r) abort "{{{1
+fu! s:is_commented(line, l, r) abort "{{{2
     let line   = matchstr(a:line, '\S.*\s\@<!')
     let [l, r] = [a:l, a:r]
 
     return stridx(line, l) == 0 && line[strlen(line)-strlen(r):] ==# r
 endfu
 
-fu! comment#object(inner) abort " {{{1
+fu! comment#object(inner) abort " {{{2
     let [l_, r_]      = s:get_commentleader()
     let [l, r]        = [l_, r_]
     let boundaries    = [ line('.')+1, line('.')-2 ]
@@ -142,7 +143,7 @@ fu! comment#object(inner) abort " {{{1
     endif
 endfu
 
-fu! s:remove_trailing_wsp() abort "{{{1
+fu! s:remove_trailing_wsp() abort "{{{2
     let view = winsaveview()
 
     sil! keepj keepp '[,']s/^\s\+$//
@@ -151,7 +152,7 @@ fu! s:remove_trailing_wsp() abort "{{{1
     call winrestview(view)
 endfu
 
-fu! comment#toggle(type, ...) abort "{{{1
+fu! comment#toggle(type, ...) abort "{{{2
     if empty(&l:cms)
         return
     endif
@@ -166,17 +167,21 @@ fu! comment#toggle(type, ...) abort "{{{1
         let [lnum1, lnum2] = [line("'["), line("']")]
     endif
 
-    " Get the original comment leader.
+    " get original comment leader
+    " (no space added for better readability; no `@` for code)
+    let s:cml    = split(&l:cms, '%s')[0]
     let [l_, r_] = s:get_commentleader()
+    "    │   │
+    "    │   └─ end-comment leader ('' if there's none)
+    "    └─ comment leader (modified for code if needed, by prefixing it with `@`)
 
-    let s:cms = split(&l:cms, '%s')[0]
-    " Decide what to do: comment or uncomment?
+    " Decide what to do:   comment or uncomment?
     " The decision is stored in the variable `uncomment`.
     " `0` means the operator will comment the range of lines.
     " `2` "                       uncomment   "
-    let uncomment  = 2
+    let uncomment = 2
     for l:lnum in range(lnum1, lnum2)
-        let line   = getline(l:lnum)
+        let line = getline(l:lnum)
         " Adapt the comment leader to the current line, by removing padding
         " whitespace placed between the text and the comment, if needed.
         let [l, r] = s:adapt_commentleader(line, l_, r_)
@@ -313,9 +318,9 @@ fu! comment#toggle(type, ...) abort "{{{1
     endif
 
     " don't unlet `s:toggle_what`:  it would break the dot command
-    unlet! s:cms
+    unlet! s:cml
 endfu
 
-fu! comment#what(this) abort "{{{1
+fu! comment#what(this) abort "{{{2
     let s:toggle_what = a:this
 endfu

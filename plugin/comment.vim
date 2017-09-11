@@ -1,5 +1,5 @@
 " TODO:
-" `io` should select a range of consecutive commented lines of text.
+" `ic` should select a range of consecutive commented lines of text.
 " It should stop when it finds a commented line of code.
 " Currently, it doesn't.
 
@@ -35,7 +35,7 @@ let g:loaded_comment = 1
 com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
-" duplicate {{{2
+" duplicate code {{{2
 
 "                                              ┌─ we will always want to duplicate code (not text)
 "                                              │
@@ -55,10 +55,10 @@ nno  <silent>  gCC    :<c-u>call comment#what('code')
                       \<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+ono  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gCu    gCiO
+nmap <silent>  gCu    gCiC
 
 " toggle text {{{2
 
@@ -68,9 +68,9 @@ nno  <silent>  gcc    :<c-u>call comment#what('text')
                       \<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  io     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  io     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
+ono  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gcu    gcio
+nmap <silent>  gcu    gcic
 "                │
 "                └─ Uncomment text-object
