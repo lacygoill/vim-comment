@@ -215,8 +215,22 @@ fu! comment#toggle(type, ...) abort "{{{2
     " We want all of them to be aligned under the first one.
     " To do this, we need to know the level of indentation of the first line.
     let indent = matchstr(getline(lnum1), '^\s*')
+
     for l:lnum in range(lnum1,lnum2)
         let line = getline(l:lnum)
+
+        " Don't do anything if the line is:
+        "
+        "         • empty
+        "         • commented code, but we want to toggle text
+        "         • commented text, but we want to toggle code
+
+        if    line =~# '^\s*$'
+       \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
+       \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
+            continue
+        endif
+
         let [l, r] = s:adapt_commentleader(line, l_, r_)
 
         " Add support for nested comments.
@@ -247,39 +261,12 @@ fu! comment#toggle(type, ...) abort "{{{2
             let pat = '\S.*\s\@<!'
             let rep = '\=submatch(0)[strlen(l) : -1 - strlen(r)]'
         else
-            " At the end of the pattern, we could write `\zs.*\s@<!`, but then
-            " it could comment an empty line.
-            " We don't want that, so we write `\zs.*\S` instead.
-            " This pattern makes sure at least one non-whitespace character is
-            " present on the line.
-
-            " Switch to 2nd pattern/replacement, if you want to comment empty lines.
-            " Beware, it's not perfect, uncommenting on a block of lines containing
-            " an indented empty line leaves trailing whitespace.
-            " For the moment, I think I fixed this issue by installing an
-            " autocmd listening to the `CommentTogglePost` event.
-
-            " let pat = '\v^%(' . indent . '|\s*)\zs.*\S'
-            let pat = '\v^%(' . indent . '|\s*)\zs.*'
-            " let rep = '\=l . submatch(0) . r'
-            let rep = '\=!empty(submatch(0)) ? l.submatch(0).r : indent.l[:-2].r'
-            "                                                              │
-            "                                               remove space  ─┘
-            "                                       after comment leader
+            let pat = '\v^%('.indent.'|\s*)\zs.*'
+            let rep = '\=l.submatch(0).r'
         endif
 
-        " Don't do anything if the line is:
-        "
-        "         • empty
-        "         • commented code, but we want to toggle text
-        "         • commented text, but we want to toggle code
-        if    line =~# '^\s*$'
-       \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
-       \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
-        else
-            let line = substitute(line, pat, rep, '')
-            call setline(l:lnum, line)
-        endif
+        let line = substitute(line, pat, rep, '')
+        call setline(l:lnum, line)
     endfor
 
     " We execute all the autocmds using the event `User` and the filter
