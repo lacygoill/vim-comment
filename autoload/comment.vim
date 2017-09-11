@@ -7,12 +7,10 @@ endfu
 
 " guard {{{1
 
-" TODO: restore the guard
-
-" if exists('g:auto_loaded_comment')
-"     finish
-" endif
-" let g:auto_loaded_comment = 1
+if exists('g:auto_loaded_comment')
+    finish
+endif
+let g:auto_loaded_comment = 1
 
 " autocmd {{{1
 
