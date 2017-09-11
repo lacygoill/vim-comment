@@ -79,10 +79,10 @@ fu! s:is_commented(line, l, r) abort "{{{2
     return stridx(line, l) == 0 && line[strlen(line)-strlen(r):] ==# r
 endfu
 
-fu! comment#object(inner) abort "{{{2
-    let [l_, r_]      = s:get_commentleader()
-    let [l, r]        = [l_, r_]
-    let boundaries    = [ line('.')+1, line('.')-2 ]
+fu! comment#object(op_is_c) abort "{{{2
+    let [l_, r_]   = s:get_commentleader()
+    let [l, r]     = [l_, r_]
+    let boundaries = [ line('.')+1, line('.')-2 ]
 
     " We consider a line to be in a comment object iff it's:
     "
@@ -91,36 +91,54 @@ fu! comment#object(inner) abort "{{{2
     "         • not a commented line of code while we're working on text
     " … OR:
     "         • an empty line
-    let Line_is_in_comment_object = { -> s:is_commented(line, l, r)
-                                \&&      match(line, '{{{\|}}}') == -1
-                                \&&      !(s:toggle_what ==# 'text' && s:is_commented(line, l.'@', r))
-                                \||      line !~ '\S' && boundaries[which] != limit
-                                \}
+    "
+    "           If the boundary has reached the end/beginning of the buffer,
+    "           there's no next line.
+    "           But `getline('.')` will still return an empty string.
+    "           So the test:
+    "
+    "                   next_line !~ '\S'
+    "
+    "           … will succeed, wrongly.
+    "           We mustn't include this non-existent line.
+    "           Otherwise, we'll be stuck in an infinite loop,
+    "           forever (inc|dec)rementing the boundary and forever including
+    "           new non-existent lines.
+    "           Hence:
+    "                   boundaries[which] != limit
+    let Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
+                             \&&      match(next_line, '{{{\|}}}') == -1
+                             \&&      !(s:toggle_what ==# 'text' && s:is_commented(next_line, l.'@', r))
+                             \
+                             \||      next_line !~ '\S' && boundaries[which] != limit
+                             \}
 
     "     ┌─ 0 or 1:  upper or lower boundary
     "     │
-    for [ which, dir, limit, line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
-        while Line_is_in_comment_object()
+    for [ which, dir, limit, next_line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
+        while Next_line_is_in_object()
+            " the test was successful so (inc|dec)rement the boundary
             let boundaries[which] += dir
-            let line               = getline(boundaries[which]+dir)
-            let [l, r]             = s:adapt_commentleader(line,l_,r_)
+            " update `line`, `l`, `r` before next test
+            let next_line = getline(boundaries[which]+dir)
+            let [l, r]    = s:adapt_commentleader(next_line,l_,r_)
         endwhile
     endfor
 
-    " If there're empty lines at the very beginning of the comment object,
-    " remove them by incrementing the upper boundary.
-    " Do it only if the operator is `c` (a:inner == 1), or if the comment
-    " object doesn't end at the very end of the buffer (`boundaries[1] != line('$')`).
-    if a:inner || boundaries[1] != line('$')
+    "  ┌─ we operate on the object with `c`
+    "  │            ┌─ OR the object doesn't end at the very end of the buffer
+    "  │            │
+    if a:op_is_c || boundaries[1] != line('$')
+        " make sure there's no empty lines at the beginning of the object by
+        " incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
             let boundaries[0] += 1
         endwhile
     endif
 
-    " If there're empty lines at the end of the comment object, remove them by
-    " decrementing the lower boundary.
-    " Do it only if the operator is `c` (a:inner == 1).
-    if a:inner
+    if a:op_is_c
+        " make sure there's no empty lines at the end of the object by
+        " decrementing the lower boundary as long as necessary
         while getline(boundaries[1]) !~ '\S'
             let boundaries[1] -= 1
         endwhile
@@ -132,9 +150,9 @@ fu! comment#object(inner) abort "{{{2
         return
     endif
 
-    " position the cursor on the 1st line of the comment object
+    " position the cursor on the 1st line of the object
     exe 'norm! '.boundaries[0].'G'
-    " select the comment object
+    " select the object
     exe 'norm! V'.boundaries[1].'G'
 endfu
 
