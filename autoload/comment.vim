@@ -13,17 +13,20 @@ endif
 let g:auto_loaded_comment = 1
 
 " functions {{{1
-fu! s:adapt_commentleader(line, l_, r_) abort " {{{2
+fu! s:adapt_commentleader(line, l_, r_) abort "{{{2
     let [l_, r_] = [ a:l_    , a:r_   ]
     let [l, r]   = [ l_[0:-2], r_[1:] ]
     "                  └────┤    └──┤
     "                       │       └ remove 1st  whitespace
     "                       └──────── remove last whitespace
 
-    if !s:is_commented(a:line, l_, r_) && s:is_commented(a:line, l, r)
+    " if the line is commented with the “adapted“ comment leaders, but not with
+    " the original ones, return the adapted ones
+    if s:is_commented(a:line, l, r) && !s:is_commented(a:line, l_, r_)
         return [l, r]
     endif
 
+    " by default, return the original ones
     return [l_, r_]
 endfu
 
@@ -76,26 +79,27 @@ fu! s:is_commented(line, l, r) abort "{{{2
     return stridx(line, l) == 0 && line[strlen(line)-strlen(r):] ==# r
 endfu
 
-fu! comment#object(inner) abort " {{{2
+fu! comment#object(inner) abort "{{{2
     let [l_, r_]      = s:get_commentleader()
     let [l, r]        = [l_, r_]
     let boundaries    = [ line('.')+1, line('.')-2 ]
 
     for [ index, dir, limit, line ] in [ [0, -1, 1, ''], [1, 1, line('$'), ''] ]
-
-        " line !~ '\S'    ⇔    line =~ '^\s*$'
         while s:is_commented(line, l, r)
-        \|| ( line !~ '\S' && boundaries[index] != limit )
+        \||   line !~ '\S' && boundaries[index] != limit
 
             let boundaries[index] += dir
             let line               = getline(boundaries[index]+dir)
             let [l, r]             = s:adapt_commentleader(line,l_,r_)
 
-            " In a Vim buffer, a comment can't span across several folds
-            if &ft ==# 'vim' && dir == -1 && match(getline(boundaries[index]), '"\+\s*{{{\s*$') != -1
+            " a comment shouldn't span across several folds
+            let pat = '{{{\|}}}'
+            if dir == -1 && match(getline(boundaries[index]), pat) != -1
+                " cancel last decrementation
                 let boundaries[index] += 1
                 break
-            elseif &ft ==# 'vim' && dir == 1 && match(getline(boundaries[index]), '"\+\s*}}}\s*$') != -1
+            elseif dir == 1 && match(getline(boundaries[index]), pat) != -1
+                " cancel last incrementation
                 let boundaries[index] -= 1
                 break
             endif
@@ -169,11 +173,18 @@ fu! comment#toggle(type, ...) abort "{{{2
     "    └─ comment leader (modified for code if needed, by prefixing it with `@`)
 
     " Decide what to do:   comment or uncomment?
-    " The decision is stored in the variable `uncomment`:
+    " The decision will be stored in the variable `uncomment`:
     "
     "         • 0 = the operator will comment    the range of lines
     "         • 2 = "                 uncomment  "
 
+    "               ┌─ Why 2 instead of 1?
+    "               │  Nested comments use numbers to denote the level of imbrication.
+    "               │  2 is a convenient value to compute an (in|de)cremented level:
+    "               │
+    "               │             old_lvl - uncomment + 1
+    "               │                       │
+    "               │                       └─ should be 2 or 0
     let uncomment = 2
     for l:lnum in range(lnum1, lnum2)
         let line = getline(l:lnum)
@@ -227,7 +238,7 @@ fu! comment#toggle(type, ...) abort "{{{2
         "         • commented code, but we want to toggle text
         "         • commented text, but we want to toggle code
 
-        if    line =~# '^\s*$'
+        if    line !~ '\S'
        \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
        \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
             continue
@@ -250,7 +261,7 @@ fu! comment#toggle(type, ...) abort "{{{2
         " the comment leader contains a backslash.
         " Maybe to prevent something like `\1` to be interpreted as
         " a backref. Shouldn't the nomagic flag `\M` already prevent that?
-        if strlen(r) > 2 && l.r !~# '\\'
+        if strlen(r) > 2 && l.r !~ '\\'
             let left_number  = l[0] . '\zs\d\+\ze' . l[1:]
             let right_number = r[:-2] . '\zs\d\+\ze' . r[-1:-1]
             let pat          = '\M' . left_number . '\|' . right_number
