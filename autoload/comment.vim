@@ -24,7 +24,7 @@ augroup my_comment_toggle
     au User CommentTogglePost call s:remove_trailing_wsp()
 augroup END
 
-fu! s:adapt_commentstring(line, l, r) abort " {{{1
+fu! s:adapt_commentleader(line, l, r) abort " {{{1
     let [line, l_, r_] = [a:line, a:l, a:r]
     let [l, r]         = [l_[0:-2], r_[1:]]
 
@@ -47,35 +47,34 @@ fu! comment#duplicate(type) abort "{{{1
     norm! `]]p
 endfu
 
-fu! s:get_commentstring() abort "{{{1
+fu! s:get_commentleader() abort "{{{1
     " This function should return a list of 2 strings:
     "
-    "     - the beginning of a comment string; e.g. for vim: `" `
-    "     - the end of a comment string;       e.g. for html: ` -->`
+    "     • the beginning of a comment string; e.g. for vim: `" `
+    "     • the end of a comment string;       e.g. for html: ` -->`
     "
     " To do so it relies on the template `&commenstring`.
 
-    if get(s:, 'toggle_what', 'text') ==# 'code'
-        return [ split(&cms, '%s', 1)[0].'@ ' ] + [ split(&cms, '%s', 1)[1] ]
-    endif
+    " make sure there's a space between the comment leader and the comment:
+    "         "%s   →   " %s
+    " more readable
+    let cms = substitute(&l:cms, '\S\zs\ze%s', ' ', '')
 
-    " To make the commented text more readable, we don't want the item `%s` to be
-    " directly preceded by a non whitespace.
-    " So we add a space between the beginning of the comment string and `%s`:
-    "
-    "         `"%s` → `" %s`
-    let cms = substitute(&commentstring, '\S\zs\ze%s',' ','')
-    " Same thing if `%s` is followed by a non whitespace:
-    "
-    "         `<-- %s-->`    →    `<-- %s -->`
+    " make sure there's a space between the comment and the end-comment leader
+    "         <-- %s-->    →    <-- %s -->
     let cms = substitute(cms,'%s\zs\ze\S', ' ', '')
 
-    " Finally, we return the beginning and end of the comment string through
-    " a list of 2 items.
+    " if we operate on lines of code, make sure the comment leader ends with `@`
+    if get(s:, 'toggle_what', 'text') ==# 'code'
+        let cms = substitute(cms, '\ze %s', '@', '')
+    endif
+
+    " return the comment leader, and the possible end-comment leader,
+    " through a list of 2 items
     return split(cms, '%s', 1)
-    " To be sure that the returned list always has 2 items, we pass the 3rd argument
-    " `1` to split(). This way, it will return an empty string as the 2nd item if
-    " the comment string is not in 2 parts, that is if the template ends with `%s`.
+    "                       │
+    "                       └─ always return 2 items, even if there's nothing
+    "                          after `%s` (in this case, the 2nd item will be '')
 endfu
 
 fu! s:is_commented(line, l, r) abort "{{{1
@@ -86,7 +85,7 @@ fu! s:is_commented(line, l, r) abort "{{{1
 endfu
 
 fu! comment#object(inner) abort " {{{1
-    let [l_, r_]      = s:get_commentstring()
+    let [l_, r_]      = s:get_commentleader()
     let [l, r]        = [l_, r_]
     let boundaries    = [ line('.')+1, line('.')-2 ]
 
@@ -98,7 +97,7 @@ fu! comment#object(inner) abort " {{{1
 
             let boundaries[index] += dir
             let line               = getline(boundaries[index]+dir)
-            let [l, r]             = s:adapt_commentstring(line,l_,r_)
+            let [l, r]             = s:adapt_commentleader(line,l_,r_)
 
             " In a Vim buffer, a comment can't span across several folds
             if &ft ==# 'vim' && dir == -1 && match(getline(boundaries[index]), '"\+\s*{{{\s*$') != -1
@@ -155,6 +154,10 @@ fu! s:remove_trailing_wsp() abort "{{{1
 endfu
 
 fu! comment#toggle(type, ...) abort "{{{1
+    if empty(&l:cms)
+        return
+    endif
+
     " Define the range of lines to (un)comment.
 
     if a:type ==# 'Ex'
@@ -165,19 +168,10 @@ fu! comment#toggle(type, ...) abort "{{{1
         let [lnum1, lnum2] = [line("'["), line("']")]
     endif
 
-    " Get the original comment string.
-    " We wrap the code in a `try` conditional to handle the case where the
-    " comment string is empty.
-    " It raises an error, and there's nothing the operator can do without
-    " a comment string.
-    " So, if `s:get_commentstring()` fails to return sth, we stop immediately.
-    try
-        let [l_, r_]   = s:get_commentstring()
-    catch
-        return
-    endtry
+    " Get the original comment leader.
+    let [l_, r_] = s:get_commentleader()
 
-    let s:cms  = split(&cms, '%s')[0]
+    let s:cms = split(&l:cms, '%s')[0]
     " Decide what to do: comment or uncomment?
     " The decision is stored in the variable `uncomment`.
     " `0` means the operator will comment the range of lines.
@@ -185,9 +179,9 @@ fu! comment#toggle(type, ...) abort "{{{1
     let uncomment  = 2
     for l:lnum in range(lnum1, lnum2)
         let line   = getline(l:lnum)
-        " Adapt the comment string to the current line, by removing padding
+        " Adapt the comment leader to the current line, by removing padding
         " whitespace placed between the text and the comment, if needed.
-        let [l, r] = s:adapt_commentstring(line, l_, r_)
+        let [l, r] = s:adapt_commentleader(line, l_, r_)
 
         " To comment a range of lines, one of them must be:
         "
@@ -227,7 +221,7 @@ fu! comment#toggle(type, ...) abort "{{{1
     let indent = matchstr(getline(lnum1), '^\s*')
     for l:lnum in range(lnum1,lnum2)
         let line = getline(l:lnum)
-        let [l, r] = s:adapt_commentstring(line, l_, r_)
+        let [l, r] = s:adapt_commentleader(line, l_, r_)
 
         " Add support for nested comments.
         " Example: In a html file:
@@ -299,27 +293,29 @@ fu! comment#toggle(type, ...) abort "{{{1
     " filter. Example:
     "
     "         augroup my_comment_toggle
-    "             autocmd!
-    "             autocmd User CommentTogglePost `do some stuff`
+    "             au!
+    "             au User CommentTogglePost `do some stuff`
     "         augroup END
-    "
-    " By default, when an autocmd is executed, the modelines in the current
-    " buffer are processed (if 'modelines' != 0).
-    " Indeed, the modelines must be able to overrule the settings changed by
-    " autocmds. For example, when we edit a file, the settings set by
-    " modelines must be able to overrule the ones set by the autocmds watching
-    " the BufRead event.
-    "
-    " But here, we probably don't want the modelines to change anything.
-    " So we add the <nomodeline> argument to prevent the modelines in the
-    " current buffer to be processed:
-    "
-    "     https://github.com/tpope/vim-commentary/issues/26
 
     if exists('#User#CommentTogglePost')
         doautocmd <nomodeline> User CommentTogglePost
+        " By default, when an autocmd is executed, the modelines in the current
+        " buffer are processed (if &modelines != 0).
+        " Indeed, the modelines must be able to overrule the settings changed by
+        " autocmds. For example, when we edit a file, the settings set by
+        " modelines must be able to overrule the ones set by the autocmds
+        " watching the BufRead event.
+        "
+        " But here, we probably don't want the modelines to change anything.
+        " So we add the <nomodeline> argument to prevent the modelines in the
+        " current buffer to be processed. From :h :do:
+        "
+        "         You probably want to use <nomodeline> for events that are not
+        "         used when loading a buffer, such as |User|.
     endif
-    unlet! s:cms s:toggle_what
+
+    " don't unlet `s:toggle_what`:  it would break the dot command
+    unlet! s:cms
 endfu
 
 fu! comment#what(this) abort "{{{1
