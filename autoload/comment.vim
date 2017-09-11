@@ -291,7 +291,6 @@ fu! comment#toggle(type, ...) abort "{{{1
             call setline(l:lnum, line)
         endif
     endfor
-    unlet! s:cms
 
     " We execute all the autocmds using the event `User` and the filter
     " `CommentTogglePost`.
@@ -320,6 +319,7 @@ fu! comment#toggle(type, ...) abort "{{{1
     if exists('#User#CommentTogglePost')
         doautocmd <nomodeline> User CommentTogglePost
     endif
+    unlet! s:cms s:toggle_what
 endfu
 
 fu! comment#what(this) abort "{{{1

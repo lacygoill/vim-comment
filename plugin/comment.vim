@@ -9,10 +9,6 @@
 " Or better, get rid of `s:remove_trailing_wsp()`:  need to tweak `toggle()`
 " for that.
 
-" TODO:
-" `ZD` should consider the lines as code by default. Currently, it doesn't if
-" we've just used `gc`.
-
 " Guard {{{1
 
 if exists('g:loaded_comment')
@@ -39,6 +35,32 @@ let g:loaded_comment = 1
 com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
+" duplicate {{{2
+
+"                                              ┌─ we will always want to duplicate code (not text)
+"                                              │
+nno  <silent>  Zd     :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
+nno  <silent>  Zdd    :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<bar>exe 'norm! '.v:count1.'g@_'<cr>
+xno  <silent>  Zd     :<c-u>call comment#what('code')<bar>call comment#duplicate(visualmode())<cr>
+
+nmap           ZD     Zd
+xmap           ZD     Zd
+nmap           ZDD    Zdd
+
+" toggle code {{{2
+
+nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gCC    :<c-u>call comment#what('code')
+                      \<bar>set opfunc=comment#toggle
+                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+
+ono  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+
+nmap <silent>  gCu    gCiO
+
+" toggle text {{{2
 
 nno  <silent>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
 xno  <silent>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
@@ -52,26 +74,3 @@ xno  <silent>  io     :<c-u>call comment#what('text')<bar>call comment#object(0)
 nmap <silent>  gcu    gcio
 "                │
 "                └─ Uncomment text-object
-
-
-
-nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gCC    :<c-u>call comment#what('code')
-                      \<bar>set opfunc=comment#toggle
-                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
-
-ono  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  iO     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
-
-nmap <silent>  gCu    gCiO
-
-
-
-nno <silent> Zd     :<c-u>set opfunc=comment#duplicate<cr>g@
-nno <silent> Zdd    :<c-u>set opfunc=comment#duplicate<bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno <silent> Zd     :<c-u>call comment#duplicate(visualmode())<cr>
-
-nmap ZD  Zd
-xmap ZD  Zd
-nmap ZDD Zdd
