@@ -3,12 +3,6 @@
 " It should stop when it finds a commented line of code.
 " Currently, it doesn't.
 
-" FIXME:
-" In `s:remove_trailing_wsp()`, we shouldn't trim trailing whitespace twice.
-" Find a way to detect the proper range.
-" Or better, get rid of `s:remove_trailing_wsp()`:  need to tweak `toggle()`
-" for that.
-
 " Guard {{{1
 
 if exists('g:loaded_comment')

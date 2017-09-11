@@ -12,22 +12,15 @@ if exists('g:auto_loaded_comment')
 endif
 let g:auto_loaded_comment = 1
 
-" autocmd {{{1
-
-" Currently, uncommenting an (indented) empty line leaves undesired whitespace.
-" Remove them.
-
-augroup my_comment_toggle
-    au!
-    au User CommentTogglePost call s:remove_trailing_wsp()
-augroup END
-
 " functions {{{1
 fu! s:adapt_commentleader(line, l_, r_) abort " {{{2
-    let [line, l_, r_] = [ a:line,   a:l_,   a:r_ ]
-    let [l, r]         = [ l_[0:-2], r_[1:]       ]
+    let [l_, r_] = [ a:l_    , a:r_   ]
+    let [l, r]   = [ l_[0:-2], r_[1:] ]
+    "                  └────┤    └──┤
+    "                       │       └ remove 1st  whitespace
+    "                       └──────── remove last whitespace
 
-    if !s:is_commented(line, l_, r_) && s:is_commented(line, l, r)
+    if !s:is_commented(a:line, l_, r_) && s:is_commented(a:line, l, r)
         return [l, r]
     endif
 
@@ -245,14 +238,14 @@ fu! comment#toggle(type, ...) abort "{{{2
         if strlen(r) > 2 && l.r !~# '\\'
             let left_number  = l[0] . '\zs\d\+\ze' . l[1:]
             let right_number = r[:-2] . '\zs\d\+\ze' . r[-1:-1]
-            let pattern      = '\M' . left_number . '\|' . right_number
-            let replacement  = '\=submatch(0)-uncomment+1 == 0 ? '''' : submatch(0)-uncomment+1'
-            let line         = substitute(line, pattern, replacement, 'g')
+            let pat          = '\M' . left_number . '\|' . right_number
+            let rep          = '\=submatch(0)-uncomment+1 == 0 ? '''' : submatch(0)-uncomment+1'
+            let line         = substitute(line, pat, rep, 'g')
         endif
 
         if uncomment
-            let pattern     = '\S.*\s\@<!'
-            let replacement = '\=submatch(0)[strlen(l) : -1 - strlen(r)]'
+            let pat = '\S.*\s\@<!'
+            let rep = '\=submatch(0)[strlen(l) : -1 - strlen(r)]'
         else
             " At the end of the pattern, we could write `\zs.*\s@<!`, but then
             " it could comment an empty line.
@@ -266,13 +259,13 @@ fu! comment#toggle(type, ...) abort "{{{2
             " For the moment, I think I fixed this issue by installing an
             " autocmd listening to the `CommentTogglePost` event.
 
-            " let pattern     = '\v^%(' . indent . '|\s*)\zs.*\S'
-            let pattern     = '\v^%(' . indent . '|\s*)\zs.*'
-            " let replacement = '\=l . submatch(0) . r'
-            let replacement = '\=!empty(submatch(0)) ? l.submatch(0).r : indent.l[:-2].r'
-            "                                                                       │
-            "                                                        remove space  ─┘
-            "                                             after comment character
+            " let pat = '\v^%(' . indent . '|\s*)\zs.*\S'
+            let pat = '\v^%(' . indent . '|\s*)\zs.*'
+            " let rep = '\=l . submatch(0) . r'
+            let rep = '\=!empty(submatch(0)) ? l.submatch(0).r : indent.l[:-2].r'
+            "                                                              │
+            "                                               remove space  ─┘
+            "                                       after comment leader
         endif
 
         " Don't do anything if the line is:
@@ -284,7 +277,7 @@ fu! comment#toggle(type, ...) abort "{{{2
        \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
        \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
         else
-            let line = substitute(line, pattern, replacement, '')
+            let line = substitute(line, pat, rep, '')
             call setline(l:lnum, line)
         endif
     endfor
