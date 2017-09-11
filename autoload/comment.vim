@@ -234,19 +234,18 @@ fu! comment#toggle(type, ...) abort "{{{2
         let [l, r] = s:adapt_commentleader(line, l_, r_)
 
         " Add support for nested comments.
-        " Example: In a html file:
+        " Example: In an html file:
         "
         "     <!-- hello world -->                          comment
         "     <!-- <1!-- hello world --1> -->               comment in a comment
         "     <!-- <1!-- <2!-- hello world --2> --1> -->    comment in a comment in a comment
         "
-        " We need to make sure the right part of the comment has several
+        " We need to make sure the right part of the comment leader has several
         " characters, otherwise the incrementation/decrementation would occur
-        " on numbers which are not concerned.
-        " But why >2?
+        " on numbers which are not concerned. But why >2?
         "
         " We also make sure that neither the left part nor the right part of
-        " the comment string contains a backslash.
+        " the comment leader contains a backslash.
         " Maybe to prevent something like `\1` to be interpreted as
         " a backref. Shouldn't the nomagic flag `\M` already prevent that?
         if strlen(r) > 2 && l.r !~# '\\'
