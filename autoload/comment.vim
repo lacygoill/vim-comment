@@ -100,7 +100,6 @@ endfu
 fu! comment#object(op_is_c) abort "{{{2
     let [ s:l, s:r ] = split(&l:cms, '%s', 1)
     let [ l_, r_ ]   = s:get_cml()
-    let [ l , r  ]   = s:maybe_trim_cml(getline('.'), l_, r_)
     let boundaries   = [ line('.')+1, line('.')-1 ]
 
     " We consider a line to be in a comment object iff it's:{{{
@@ -137,6 +136,8 @@ fu! comment#object(op_is_c) abort "{{{2
     for   [ which,   dir,       limit,      next_line ]
    \in  [ [     0,    -1,           1,   getline('.') ]
    \,     [     1,     1,   line('$'),   getline('.') ] ]
+
+        let [ l , r  ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
             if match(next_line, '{{{\|}}}') != -1
@@ -178,12 +179,6 @@ fu! comment#object(op_is_c) abort "{{{2
 
     " position the cursor on the 1st line of the object
     exe 'norm! '.boundaries[0].'G'
-
-    "@ let fld_lvl = foldlevel(line('.'))
-    "@ if fld_lvl > 0
-    "@     "@ exe 'norm! '.fld_lvl.'zo'
-    "@     norm! zv
-    "@ endif
 
     " select the object
     exe 'norm! V'.boundaries[1].'G'
