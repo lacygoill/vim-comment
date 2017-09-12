@@ -193,19 +193,15 @@ fu! comment#search(back, ...) abort "{{{2
 
     " [ '"' ]         in Vim
     " [ '/*', '*/' ]  in C
-    let cms = split(&l:cms, '%s')
+    let cml = split(&l:cms, '%s')
 
     " \V"\v           in Vim
     " \V/*\v          in C
-    let cms_b = '\V'.matchstr(cms[0], '\S\+').'\v'
-    "       │
-    "       └─ Beginning
+    let l = '\V'.matchstr(cml[0], '\S\+').'\v'
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let cms_e = len(cms) == 2 ? '\V'.matchstr(cms[1], '\S\+').'\v' : cms_b
-    "       │
-    "       └─ End
+    let r = len(cml) == 2 ? '\V'.matchstr(cml[1], '\S\+').'\v' : l
 
     " visual mode
     if a:0
@@ -232,25 +228,25 @@ fu! comment#search(back, ...) abort "{{{2
     " `norm! 1|` + no `c` flag in search() = no match  ✔
     norm! 1|
 
-    "                                      ┌────────── NO commented line just before
-    "                                      │         ┌ a commented line
-    "                ┌─────────────────────┤┌────────┤
-    let beg_pat = '\v^%(\s*'.cms_b.'.*\n)@<!\s*'.cms_b
+    "                                  ┌────── NO commented line just before
+    "                                  │     ┌ a commented line
+    "                ┌─────────────────┤┌────┤
+    let beg_pat = '\v^%(\s*'.l.'.*\n)@<!\s*'.l
 
-    let end_pat = '\v^\s*'.cms_e.'.*\n(\s*'.cms_e.')@!'
-    "                └───────────────┤└──────────────┤
-    "                                │               └ NO commented line just after
-    "                                └───────────────── a commented line
-    "                                                   like:    " some text
-    "                                                   or:      * /
+    let end_pat = '\v^\s*'.r.'.*\n(\s*'.r.')@!'
+    "                └───────────┤└──────────┤
+    "                            │           └ NO commented line just after
+    "                            └──────────── a commented line
+    "                                          like:    " some text
+    "                                          or:      * /
 
     " in a C buffer, the last line of a commented section could look like this:
     "     * /
     "
     " … but also like this:
     "     * a comment */
-    if len(cms) == 2
-        let end_pat .= '|^.*'.cms_e.'\s*\n'
+    if len(cml) == 2
+        let end_pat .= '|^.*'.r.'\s*\n'
     endif
 
     if a:back
@@ -274,8 +270,8 @@ fu! comment#search(back, ...) abort "{{{2
     " boundary of comment sections.
     "
     "         let pattern = a:back
-    "                    \?     '\v^\s*'.cms_b.'.*\n%(\s*'.cms_b.')@!'
-    "                    \:     '\v^%(\s*'.cms_e.'.*\n)@<!\s*'.cms_e
+    "                    \?     '\v^\s*'.l.'.*\n%(\s*'.l.')@!'
+    "                    \:     '\v^%(\s*'.r.'.*\n)@<!\s*'.r
     "
     "         call search(pattern, 'W'.(a:back ? 'b' : ''))
     "
