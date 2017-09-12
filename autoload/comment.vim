@@ -63,16 +63,16 @@ endfu
 fu! s:is_commented_code(line) abort "{{{2
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:cml[0].'@') == 0
-        &&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
+    return   stridx(line, s:l.'@') == 0
+        &&   line[strlen(line)-strlen(s:r):] ==# s:r
 endfu
 
 fu! s:is_commented_text(line) abort "{{{2
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:cml[0]) == 0
-       \&&   stridx(line, s:cml[0].'@') == -1
-       \&&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
+    return   stridx(line, s:l) == 0
+       \&&   stridx(line, s:l.'@') == -1
+       \&&   line[strlen(line)-strlen(s:r):] ==# s:r
 endfu
 
 fu! s:is_relevant(line) abort "{{{2
@@ -215,11 +215,12 @@ fu! comment#toggle(type, ...) abort "{{{2
 
     " get original comment leader
     " (no space added for better readability; no `@` for code)
-    let s:cml    = split(&l:cms, '%s', 1)
-    let [l_, r_] = s:get_cml()
+    let [ s:l, s:r ] = split(&l:cms, '%s', 1)
+
+    "    ┌─ comment leader (modified: add padding space, and `@` for code)
+    "    │   ┌─ end-comment leader ('' if there's none)
     "    │   │
-    "    │   └─ end-comment leader ('' if there's none)
-    "    └─ comment leader (modified for code if needed, by prefixing it with `@`)
+    let [l_, r_] = s:get_cml()
 
     " Decide what to do:   comment or uncomment?
     " The decision will be stored in the variable `uncomment`:
@@ -265,8 +266,8 @@ fu! comment#toggle(type, ...) abort "{{{2
         " a commented line of code.
 
         if line =~ '\S'
-       \&& !s:is_commented(line, l, r)
-       \&& s:is_relevant(line)
+      \&& !s:is_commented(line, l, r)
+      \&&  s:is_relevant(line)
             let uncomment = 0
         endif
     endfor
@@ -360,7 +361,7 @@ fu! comment#toggle(type, ...) abort "{{{2
     endif
 
     " don't unlet `s:operate_on`:  it would break the dot command
-    unlet! s:cml
+    unlet! s:l s:r
 endfu
 
 fu! comment#what(this) abort "{{{2
