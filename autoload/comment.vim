@@ -98,31 +98,22 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
 endfu
 
 fu! comment#object(op_is_c) abort "{{{2
-    let [ l_, r_ ] = s:get_cml()
-    let [ l , r  ] = s:maybe_trim_cml(getline('.'), l_, r_)
-    " TODO:
-    " Why +1 and -2?
-    "
-    " There's no issue with the condition:
-    "
-    "         boundaries[which] != limit
-    "
-    " Because:
-    "         line('.') + 1 = 1          ⇒  line('.') = 0                ✘
-    "         line('.') - 2 = line('$')  ⇒  line('.') = line('$') + 2    ✘
-    let boundaries = [ line('.')+1, line('.')-1 ]
+    let [ s:l, s:r ] = split(&l:cms, '%s', 1)
+    let [ l_, r_ ]   = s:get_cml()
+    let [ l , r  ]   = s:maybe_trim_cml(getline('.'), l_, r_)
+    let boundaries   = [ line('.')+1, line('.')-1 ]
 
     " We consider a line to be in a comment object iff it's:{{{
     "
     "         • commented
+    "         • relevant
     "         • not the start/end of a fold
-    "         • not a commented line of code while we're working on text
     " … OR:
     "         • an empty line
     "
     "           If the boundary has reached the end/beginning of the buffer,
     "           there's no next line.
-    "           But `getline('.')` will still return an empty string.
+    "           But `getline()` will still return an empty string.
     "           So the test:
     "
     "                   next_line !~ '\S'
@@ -136,7 +127,7 @@ fu! comment#object(op_is_c) abort "{{{2
     "                   boundaries[which] != limit
 "}}}
     let Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
-                             \&&   !( s:operate_on ==# 'text' && s:is_commented(next_line, l.'@', r) )
+                             \&&      s:is_relevant(next_line)
                              \
                              \||      next_line !~ '\S' && boundaries[which] != limit
                              \}
@@ -147,13 +138,13 @@ fu! comment#object(op_is_c) abort "{{{2
    \in  [ [     0,    -1,           1,   getline('.') ]
    \,     [     1,     1,   line('$'),   getline('.') ] ]
         while Next_line_is_in_object()
-
-            " the test was successful so (inc|dec)rement the boundary
-            let boundaries[which] += dir
             " stop if the boundary has reached the beginning/end of a fold
             if match(next_line, '{{{\|}}}') != -1
                 break
             endif
+
+            " the test was successful so (inc|dec)rement the boundary
+            let boundaries[which] += dir
 
             " update `line`, `l`, `r` before next test
             let next_line = getline(boundaries[which]+dir)
@@ -196,6 +187,8 @@ fu! comment#object(op_is_c) abort "{{{2
 
     " select the object
     exe 'norm! V'.boundaries[1].'G'
+
+    unlet! s:l s:r
 endfu
 
 fu! comment#toggle(type, ...) abort "{{{2
