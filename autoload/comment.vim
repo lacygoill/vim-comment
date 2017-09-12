@@ -1,10 +1,3 @@
-fu! s:is_commented_text(line) abort
-    return match(a:line, '^\s*'.s:cml.'@\@!') != -1
-endfu
-fu! s:is_commented_code(line) abort
-    return match(a:line, '^\s*'.s:cml.'@') != -1
-endfu
-
 " guard {{{1
 
 if exists('g:autoloaded_comment')
@@ -13,45 +6,26 @@ endif
 let g:autoloaded_comment = 1
 
 " functions {{{1
-fu! s:adapt_commentleader(line, l_, r_) abort "{{{2
-    let [l_, r_] = [ a:l_    , a:r_   ]
-    let [l, r]   = [ l_[0:-2], r_[1:] ]
-    "                  └────┤    └──┤
-    "                       │       └ remove 1st  whitespace
-    "                       └──────── remove last whitespace
-
-    " if the line is commented with the “adapted“ comment leaders, but not with
-    " the original ones, return the adapted ones
-    if s:is_commented(a:line, l, r) && !s:is_commented(a:line, l_, r_)
-        return [l, r]
-    endif
-
-    " by default, return the original ones
-    return [l_, r_]
-endfu
-
 fu! comment#duplicate(type) abort "{{{2
     if count([ 'v', 'V', "\<c-v>" ], a:type)
-        norm! gvygv
-        norm gc
+        '<,'>yank
+        '<,'>CommentToggle
+        norm! `>]p
     else
         norm! '[y']
         '[,']CommentToggle
+        norm! `]]p
     endif
-
-    norm! `]]p
 endfu
 
-fu! s:get_commentleader() abort "{{{2
+fu! s:get_cml() abort "{{{2
     " This function should return a list of 2 strings:
     "
     "     • the beginning of a comment string; e.g. for vim:    `" `
     "     • the end of a comment string;       e.g. for html:   ` -->`
-    "
-    " To do so it relies on the template `&commenstring`.
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
-    let cms = get(s:, 'toggle_what', 'text') ==# 'code'
+    let cms = get(s:, 'operate_on', 'text') ==# 'code'
            \?     substitute(&l:cms, '\ze%s', '@', '')
            \:     &l:cms
 
@@ -73,15 +47,61 @@ fu! s:get_commentleader() abort "{{{2
 endfu
 
 fu! s:is_commented(line, l, r) abort "{{{2
-    let line   = matchstr(a:line, '\S.*\s\@<!')
-    let [l, r] = [a:l, a:r]
+    "                            ┌─ trim beginning whitespace
+    "                            │
+    let line = matchstr(a:line, '\S.*\s\@<!')
+    "                                └────┤
+    "                                     └ trim ending whitespace
 
-    return stridx(line, l) == 0 && line[strlen(line)-strlen(r):] ==# r
+    "                           ┌ the line begins with the comment leader
+    "      ┌────────────────────┤
+    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] ==# a:r
+    "                                └─────────────────────────────────────┤
+    "                             it also ends with the end-comment leader ┘
+endfu
+
+fu! s:is_commented_code(line) abort "{{{2
+    return match(a:line, '^\s*'.s:cml.'@') != -1
+endfu
+
+fu! s:is_commented_text(line) abort "{{{2
+    return match(a:line, '^\s*'.s:cml.'@\@!') != -1
+endfu
+
+fu! s:is_relevant(line) abort "{{{2
+    return !(s:operate_on ==# 'code' && s:is_commented_text(a:line))
+    " Not needed for the moment, because before checking `s:is_relevant()`,
+    " we've already checked that the line is not commented.
+    "
+    " So, if we operate on text, and the line is not commented, it means that
+    " it's not a commented line of text. Therefore, it's not a commented line
+    " of code neither.
+    "
+    " I keep the condition in case one day it's needed:
+    "
+    "         \&& !(s:operate_on ==# 'text' && s:is_commented_code(a:line))
+endfu
+
+fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
+    let [l_, r_] = [ a:l_    , a:r_   ]
+    let [l, r]   = [ l_[0:-2], r_[1:] ]
+    "                  └────┤    └──┤
+    "                       │       └ remove 1st  whitespace
+    "                       └──────── remove last whitespace
+
+    " if the line is commented with the trimmed comment leaders, but not with
+    " the original ones, return the trimmed ones
+    if s:is_commented(a:line, l, r) && !s:is_commented(a:line, l_, r_)
+        return [l, r]
+    endif
+
+    " by default, return the original ones
+    return [l_, r_]
 endfu
 
 fu! comment#object(op_is_c) abort "{{{2
-    let [ l_, r_ ] = s:get_commentleader()
-    let [ l, r ]   = [ l_, r_ ]
+    let [ l_, r_ ] = s:get_cml()
+    let [ l , r  ] = s:maybe_trim_cml(getline('.'), l_, r_)
     " TODO:
     " Why +1 and -2?
     "
@@ -92,7 +112,7 @@ fu! comment#object(op_is_c) abort "{{{2
     " Because:
     "         line('.') + 1 = 1          ⇒  line('.') = 0                ✘
     "         line('.') - 2 = line('$')  ⇒  line('.') = line('$') + 2    ✘
-    let boundaries = [ line('.')+1, line('.')-2 ]
+    let boundaries = [ line('.')+1, line('.')-1 ]
 
     " We consider a line to be in a comment object iff it's:{{{
     "
@@ -118,23 +138,28 @@ fu! comment#object(op_is_c) abort "{{{2
     "                   boundaries[which] != limit
 "}}}
     let Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
-                             \&&      match(next_line, '{{{\|}}}') == -1
-                             \&&      !(s:toggle_what ==# 'text' && s:is_commented(next_line, l.'@', r))
+                             \&&   !( s:operate_on ==# 'text' && s:is_commented(next_line, l.'@', r) )
                              \
                              \||      next_line !~ '\S' && boundaries[which] != limit
                              \}
 
-    "     ┌─ 0 or 1:  upper or lower boundary
-    "     │
-    for [ which, dir, limit, next_line ]
-  \ in      [ [ 0, -1, 1, getline('.') ],
-  \           [ 1, 1, line('$'), getline(line('.')-1) ] ]
+    "       ┌─ 0 or 1:  upper or lower boundary
+    "       │
+    for   [ which,   dir,       limit,      next_line ]
+   \in  [ [     0,    -1,           1,   getline('.') ]
+   \,     [     1,     1,   line('$'),   getline('.') ] ]
         while Next_line_is_in_object()
+
             " the test was successful so (inc|dec)rement the boundary
             let boundaries[which] += dir
+            " stop if the boundary has reached the beginning/end of a fold
+            if match(next_line, '{{{\|}}}') != -1
+                break
+            endif
+
             " update `line`, `l`, `r` before next test
             let next_line = getline(boundaries[which]+dir)
-            let [l, r]    = s:adapt_commentleader(next_line, l_, r_)
+            let [l, r]    = s:maybe_trim_cml(next_line, l_, r_)
         endwhile
     endfor
 
@@ -164,6 +189,13 @@ fu! comment#object(op_is_c) abort "{{{2
 
     " position the cursor on the 1st line of the object
     exe 'norm! '.boundaries[0].'G'
+
+    "@ let fld_lvl = foldlevel(line('.'))
+    "@ if fld_lvl > 0
+    "@     "@ exe 'norm! '.fld_lvl.'zo'
+    "@     norm! zv
+    "@ endif
+
     " select the object
     exe 'norm! V'.boundaries[1].'G'
 endfu
@@ -186,7 +218,7 @@ fu! comment#toggle(type, ...) abort "{{{2
     " get original comment leader
     " (no space added for better readability; no `@` for code)
     let s:cml    = split(&l:cms, '%s')[0]
-    let [l_, r_] = s:get_commentleader()
+    let [l_, r_] = s:get_cml()
     "    │   │
     "    │   └─ end-comment leader ('' if there's none)
     "    └─ comment leader (modified for code if needed, by prefixing it with `@`)
@@ -207,33 +239,36 @@ fu! comment#toggle(type, ...) abort "{{{2
     let uncomment = 2
     for l:lnum in range(lnum1, lnum2)
         let line = getline(l:lnum)
-        " Adapt the comment leader to the current line, by removing padding
-        " whitespace placed between the text and the comment, if needed.
-        let [l, r] = s:adapt_commentleader(line, l_, r_)
+        " If needed for the current line, trim the comment leader.
+        let [l, r] = s:maybe_trim_cml(line, l_, r_)
 
         " To comment a range of lines, one of them must be:
         "
         "         • not empty
         "         • not commented
-        "         • not a commented line of text
+        "         • relevant
         "
-        " TODO:
-        " Why the need for the 3rd condition?
-        " How can a line be not commented and a commented line of text at the
-        " same time?
-        " It could be a commented line of code.
+        " What is an irrelevant line?
+        " A commented line of text, when we operate on code. (1)
+        " Or a commented line of code, when we operate on text. (2)
         "
-        " What if the line is a commented line of text.
-        " Don't we need a similar condition for it?
-        " No. Because, if the line is not empty, and commented … to finish
+        " (1) Such a line is indeed NOT commented (because no `@` in the cml).
+        " But if we operate on code, we don't care. So we need to ignore it.
         "
-        " Refactor this part of the code. Not clear.
-        " Now that we use `s:is_commented_text()` and `s:is_commented_code()`,
-        " do we still need `s:is_commented()`?
+        " (2) Such a line should also be ignored, but is NOT a problem.
+        " Why? Because the previous condition has checked that the line is not
+        " commented. So:
+        "
+        "         we operate on text
+        "       + the line is not commented    ⇒    the line can't be
+        "                                           a commented line of code
+        "
+        " IOW: if you aren't a commented line of text, you can't be
+        " a commented line of code.
 
         if line =~ '\S'
        \&& !s:is_commented(line, l, r)
-       \&& !s:is_commented_text(line)
+       \&& s:is_relevant(line)
             let uncomment = 0
         endif
     endfor
@@ -259,12 +294,12 @@ fu! comment#toggle(type, ...) abort "{{{2
         "         • commented text, but we want to toggle code
 
         if    line !~ '\S'
-       \||    s:is_commented_code(line) && s:toggle_what ==# 'text'
-       \||    s:is_commented_text(line) && s:toggle_what ==# 'code'
+       \||    s:is_commented_code(line) && s:operate_on ==# 'text'
+       \||    s:is_commented_text(line) && s:operate_on ==# 'code'
             continue
         endif
 
-        let [l, r] = s:adapt_commentleader(line, l_, r_)
+        let [l, r] = s:maybe_trim_cml(line, l_, r_)
 
         " Add support for nested comments.
         " Example: In an html file:
@@ -329,10 +364,10 @@ fu! comment#toggle(type, ...) abort "{{{2
         "         used when loading a buffer, such as |User|.
     endif
 
-    " don't unlet `s:toggle_what`:  it would break the dot command
+    " don't unlet `s:operate_on`:  it would break the dot command
     unlet! s:cml
 endfu
 
 fu! comment#what(this) abort "{{{2
-    let s:toggle_what = a:this
+    let s:operate_on = a:this
 endfu

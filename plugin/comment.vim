@@ -18,9 +18,8 @@
 " Should we also integrate `yc` &friends?
 
 " FIXME:
-" In `~/bin/awk/histogram.awk`, right under `draw last bar`, hit `vic`.
-" Nothing is selected. 4 lines should be selected.
-" On the empty line 87, hit `viC`. 7 lines should be selected. Only 4 are.
+" In `~/bin/awk/histogram.awk`, on the empty line 87, hit `viC`.
+" 7 lines should be selected. Only 4 are.
 "
 " Hit `viC` on the line `let s:some_var = 42`.
 " The lines above are selected. They shouldn't.
@@ -106,3 +105,9 @@ xno  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(0)
 nmap <silent>  gCu    gCiC
 "                │
 "                └─ Uncomment text-object
+
+" TODO:
+" get rid of these once you don't need them anymore
+
+nmap cd viC
+nmap cz vic
