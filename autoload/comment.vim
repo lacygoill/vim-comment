@@ -71,22 +71,13 @@ fu! s:is_commented_text(line) abort "{{{2
     let line = matchstr(a:line, '\S.*\s\@<!')
 
     return   stridx(line, s:cml[0]) == 0
-       \&&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
        \&&   stridx(line, s:cml[0].'@') == -1
+       \&&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
 endfu
 
 fu! s:is_relevant(line) abort "{{{2
     return !(s:operate_on ==# 'code' && s:is_commented_text(a:line))
-    " Not needed for the moment, because before checking `s:is_relevant()`,
-    " we've already checked that the line is not commented.
-    "
-    " So, if we operate on text, and the line is not commented, it means that
-    " it's not a commented line of text. Therefore, it's not a commented line
-    " of code neither.
-    "
-    " I keep the condition in case one day it's needed:
-    "
-    "         \&& !(s:operate_on ==# 'text' && s:is_commented_code(a:line))
+       \&& !(s:operate_on ==# 'text' && s:is_commented_code(a:line))
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
@@ -297,12 +288,9 @@ fu! comment#toggle(type, ...) abort "{{{2
         " Don't do anything if the line is:
         "
         "         • empty
-        "         • commented code, but we want to toggle text
-        "         • commented text, but we want to toggle code
+        "         • irrelevant
 
-        if    line !~ '\S'
-       \||    s:is_commented_code(line) && s:operate_on ==# 'text'
-       \||    s:is_commented_text(line) && s:operate_on ==# 'code'
+        if  line !~ '\S' || !s:is_relevant(line)
             continue
         endif
 
