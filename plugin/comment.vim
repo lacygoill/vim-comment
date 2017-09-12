@@ -18,15 +18,6 @@
 " Should we also integrate `yc` &friends?
 
 " FIXME:
-" In `~/bin/awk/histogram.awk`, on the empty line 87, hit `viC`.
-" 7 lines should be selected. Only 4 are.
-"
-" Hit `viC` on the line `let s:some_var = 42`.
-" The lines above are selected. They shouldn't.
-" It's fixed. For now.
-let s:some_var = 42
-
-" FIXME:
 " If we select 2 paragraphs separated by an empty line, and hit `gC`, the
 " empty line isn't commented. Do we want it to be commented.
 "
@@ -79,6 +70,17 @@ xno  <silent>  Zd     :<c-u>call comment#what('code')<bar>call comment#duplicate
 nmap           ZD     Zd
 xmap           ZD     Zd
 nmap           ZDD    Zdd
+
+" motion {{{2
+
+nno <silent> [" :<c-u>call comment#search(1)<cr>
+nno <silent> ]" :<c-u>call comment#search(0)<cr>
+
+xno <silent> [" :<c-u>call comment#search(1, 1)<cr>
+xno <silent> ]" :<c-u>call comment#search(0, 1)<cr>
+
+ono <silent> [" :norm V["<cr>
+ono <silent> ]" :norm V]"<cr>
 
 " toggle code {{{2
 

@@ -186,6 +186,116 @@ fu! comment#object(op_is_c) abort "{{{2
     unlet! s:l s:r
 endfu
 
+fu! comment#search(back, ...) abort "{{{2
+    if empty(&l:cms)
+        return
+    endif
+
+    " [ '"' ]         in Vim
+    " [ '/*', '*/' ]  in C
+    let cms = split(&l:cms, '%s')
+
+    " \V"\v           in Vim
+    " \V/*\v          in C
+    let cms_b = '\V'.matchstr(cms[0], '\S\+').'\v'
+    "       │
+    "       └─ Beginning
+
+    " \V"\v           in Vim
+    " \V*/\v          in C
+    let cms_e = len(cms) == 2 ? '\V'.matchstr(cms[1], '\S\+').'\v' : cms_b
+    "       │
+    "       └─ End
+
+    " visual mode
+    if a:0
+        norm! gv
+    endif
+
+    " FIXME:
+    "
+    " Try this interactively from visual mode, and compare:
+    "
+    "     call search('pat')                     ✘ make us leave visual mode
+    "     call search('pat') | norm! gv          ✘ make us leave visual mode, search, then restore old selection
+    "     exe 'norm! gv' | call search('pat')    ✔ stay in visual mode, update selection
+    "
+    " `call search(…)` make us leave visual mode.
+    " But why doesn't it happen when we execute `norm! gv` just before?
+
+
+    " necessary when:
+    "       - we look for a pattern, like the previous beginning of a comment section
+    "       - the current line matches
+    "       - we want to ignore this match
+    "
+    " `norm! 1|` + no `c` flag in search() = no match  ✔
+    norm! 1|
+
+    "                                      ┌────────── NO commented line just before
+    "                                      │         ┌ a commented line
+    "                ┌─────────────────────┤┌────────┤
+    let beg_pat = '\v^%(\s*'.cms_b.'.*\n)@<!\s*'.cms_b
+
+    let end_pat = '\v^\s*'.cms_e.'.*\n(\s*'.cms_e.')@!'
+    "                └───────────────┤└──────────────┤
+    "                                │               └ NO commented line just after
+    "                                └───────────────── a commented line
+    "                                                   like:    " some text
+    "                                                   or:      * /
+
+    " in a C buffer, the last line of a commented section could look like this:
+    "     * /
+    "
+    " … but also like this:
+    "     * a comment */
+    if len(cms) == 2
+        let end_pat .= '|^.*'.cms_e.'\s*\n'
+    endif
+
+    if a:back
+        let prev_beg = search(beg_pat, 'bnW')
+        let prev_end = search(end_pat, 'bnW')
+        if [prev_beg,prev_end] != [0,0]
+            exe max(filter([prev_beg, prev_end], 'v:val != 0'))
+        endif
+    else
+        let next_beg = search(beg_pat, 'nW')
+        let next_end = search(end_pat, 'nW')
+        if [next_beg, next_end] != [0,0]
+            exe min(filter([next_beg, next_end], 'v:val != 0'))
+        endif
+    endif
+
+    " Alternative:
+    " With this implementation, `]"` traverse END of comment sections,
+    " and `["` traverse BEGINNING of comment sections.
+    " I don't like this asymmetry. I prefer `["` and `]"` to traverse ANY
+    " boundary of comment sections.
+    "
+    "         let pattern = a:back
+    "                    \?     '\v^\s*'.cms_b.'.*\n%(\s*'.cms_b.')@!'
+    "                    \:     '\v^%(\s*'.cms_e.'.*\n)@<!\s*'.cms_e
+    "
+    "         call search(pattern, 'W'.(a:back ? 'b' : ''))
+    "
+    " Inspiration:
+    " $VIMRUNTIME/ftplugin/vim.vim
+    "
+    " NOTE:
+    " if you use this version, in your vimrc, replace the lines:
+    "         ono <silent> [" :norm V["<cr>
+    "         ono <silent> ]" :norm V]"<cr>
+    "
+    " with:
+    "         ono <silent> [" :norm V["j<cr>
+    "         ono <silent> ]" :norm V]"k<cr>
+
+    if !a:0
+        let g:motion_to_repeat = a:back ? '["' : ']"'
+    endif
+endfu
+
 fu! comment#toggle(type, ...) abort "{{{2
     if empty(&l:cms)
         return
