@@ -61,11 +61,18 @@ fu! s:is_commented(line, l, r) abort "{{{2
 endfu
 
 fu! s:is_commented_code(line) abort "{{{2
-    return match(a:line, '^\s*'.s:cml.'@') != -1
+    let line = matchstr(a:line, '\S.*\s\@<!')
+
+    return   stridx(line, s:cml[0].'@') == 0
+        &&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
 endfu
 
 fu! s:is_commented_text(line) abort "{{{2
-    return match(a:line, '^\s*'.s:cml.'@\@!') != -1
+    let line = matchstr(a:line, '\S.*\s\@<!')
+
+    return   stridx(line, s:cml[0]) == 0
+       \&&   line[strlen(line)-strlen(s:cml[1]):] ==# s:cml[1]
+       \&&   stridx(line, s:cml[0].'@') == -1
 endfu
 
 fu! s:is_relevant(line) abort "{{{2
@@ -217,7 +224,7 @@ fu! comment#toggle(type, ...) abort "{{{2
 
     " get original comment leader
     " (no space added for better readability; no `@` for code)
-    let s:cml    = split(&l:cms, '%s')[0]
+    let s:cml    = split(&l:cms, '%s', 1)
     let [l_, r_] = s:get_cml()
     "    │   │
     "    │   └─ end-comment leader ('' if there's none)
