@@ -214,18 +214,6 @@ fu! comment#search(kind, back, ...) abort "{{{2
         norm! gv
     endif
 
-    " FIXME:
-    "
-    " Try this interactively from visual mode, and compare:
-    "
-    "     call search('pat')                     ✘ make us leave visual mode
-    "     call search('pat') | norm! gv          ✘ make us leave visual mode, search, then restore old selection
-    "     exe 'norm! gv' | call search('pat')    ✔ stay in visual mode, update selection
-    "
-    " `call search(…)` make us leave visual mode.
-    " But why doesn't it happen when we execute `norm! gv` just before?
-
-
     " necessary when:
     "
     "       • we look for a pattern, like the previous beginning of a comment section

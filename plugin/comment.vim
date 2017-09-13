@@ -1,38 +1,3 @@
-" TODO:
-" Invert the operators `gc` and `gC` (and the objects `ic`, `iC`).
-" `gc` is easier to type and we'll (un)comment code more frequently than text.
-" Do it once we've concealed `@` in Vim files.
-"
-" Actually, it may be a bad idea, because when you use the code from someone
-" else, they won't use `@`. So, when you will want to uncomment their code,
-" you may constantly hit the wrong mapping.
-"
-" Think more about it.
-" Edit:
-" Ok, I've thought about it, and I think it may still be worth a try.
-" Whatever we decide to do, be consistent with the mappings `yc`, `yC`, `myc`, `myC`.
-
-" TODO:
-" Integrate `myfuncs#search_comment()` (["  ]").
-" Tweak the code so that it ignores commented code. Only commented text.
-" Should we also integrate `yc` &friends?
-
-" FIXME:
-" If we select 2 paragraphs separated by an empty line, and hit `gC`, the
-" empty line isn't commented. Do we want it to be commented.
-"
-" Pro: easier to select both commented paragraph with `vip`.
-"
-" Con: ugly empty commented line
-"      somewhat useless if we have a properly implemented object (`viC`)
-"      need to re-add a lot of code we've deleted
-"      need to remove trailing whitespace, after uncommenting empty line
-"
-" Suggestion:
-" Maybe we should reverse `ic` and `iC` (as well as the other mappings),
-" because `ic` is easier to type, and maybe we'll select commented text
-" more often than commented code.
-
 " Guard {{{1
 
 if exists('g:loaded_comment')
@@ -116,9 +81,3 @@ xno  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(0)
 nmap <silent>  gCu    gCiC
 "                │
 "                └─ Uncomment text-object
-
-" TODO:
-" get rid of these once you don't need them anymore
-
-nmap cd viC
-nmap cz vic
