@@ -186,7 +186,13 @@ fu! comment#object(op_is_c) abort "{{{2
     unlet! s:l s:r
 endfu
 
-fu! comment#search(back, ...) abort "{{{2
+fu! comment#search(kind, back, ...) abort "{{{2
+    " This function positions the cursor on the next/previous beginning
+    " of a comment (kind = 'text' or 'code').
+
+    " Inspiration:
+    " $VIMRUNTIME/ftplugin/vim.vim
+
     if empty(&l:cms)
         return
     endif
@@ -197,11 +203,11 @@ fu! comment#search(back, ...) abort "{{{2
 
     " \V"\v           in Vim
     " \V/*\v          in C
-    let l = '\V'.matchstr(cml[0], '\S\+').'\v'
+    let l = '\V'.escape(matchstr(cml[0], '\S\+'), '\').'\v'
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let r = len(cml) == 2 ? '\V'.matchstr(cml[1], '\S\+').'\v' : l
+    let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
 
     " visual mode
     if a:0
@@ -221,74 +227,56 @@ fu! comment#search(back, ...) abort "{{{2
 
 
     " necessary when:
-    "       - we look for a pattern, like the previous beginning of a comment section
-    "       - the current line matches
-    "       - we want to ignore this match
+    "
+    "       • we look for a pattern, like the previous beginning of a comment section
+    "       • the current line matches
+    "       • we want to ignore this match
     "
     " `norm! 1|` + no `c` flag in search() = no match  ✔
     norm! 1|
 
-    "                                  ┌────── NO commented line just before
-    "                                  │     ┌ a commented line
-    "                ┌─────────────────┤┌────┤
-    let beg_pat = '\v^%(\s*'.l.'.*\n)@<!\s*'.l
+    if a:kind ==# 'text'
+        " We're looking for a commented line of text.
+        " It must begin a fold.
+        " OR the line before must be:
+        "         • NOT commented
+        "         • a commented line of code
+        "
+        "                                 ┌──────────── NO commented line just before
+        "                                 │           ┌ a commented line of text
+        "              ┌──────────────────┤┌──────────┤
+        let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@@!'
+        let pat .= '|^%(^\s*'.l.'\@.*\n)@<=\s*'.l.'\@@!'
+        "            └────────────────────┤
+        "                                 └──────────── a commented line of code
+        "                                               just before a commented line of text
+        let pat .= '|^\s*'.l.'\@@!.*\{\{\{'
 
-    let end_pat = '\v^\s*'.r.'.*\n(\s*'.r.')@!'
-    "                └───────────┤└──────────┤
-    "                            │           └ NO commented line just after
-    "                            └──────────── a commented line
-    "                                          like:    " some text
-    "                                          or:      * /
-
-    " in a C buffer, the last line of a commented section could look like this:
-    "     * /
-    "
-    " … but also like this:
-    "     * a comment */
-    if len(cml) == 2
-        let end_pat .= '|^.*'.r.'\s*\n'
-    endif
-
-    if a:back
-        let prev_beg = search(beg_pat, 'bnW')
-        let prev_end = search(end_pat, 'bnW')
-        if [prev_beg,prev_end] != [0,0]
-            exe max(filter([prev_beg, prev_end], 'v:val != 0'))
-        endif
     else
-        let next_beg = search(beg_pat, 'nW')
-        let next_end = search(end_pat, 'nW')
-        if [next_beg, next_end] != [0,0]
-            exe min(filter([next_beg, next_end], 'v:val != 0'))
-        endif
+        "                                   ┌────────── NO commented line just before
+        "                                   │         ┌ a commented line of code
+        "                ┌──────────────────┤┌────────┤
+        let pat  =    '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@'
+        let pat .= '|^%(^\s*'.l.'\@@!.*\n)@<=\s*'.l.'\@'
+        "            └──────────────────────┤
+        "                                   └ a commented line of text
+        "                                     just before a commented line of code
+        let pat .= '|^\s*'.l.'\@.*\{\{\{'
     endif
 
-    " Alternative:
-    " With this implementation, `]"` traverse END of comment sections,
-    " and `["` traverse BEGINNING of comment sections.
-    " I don't like this asymmetry. I prefer `["` and `]"` to traverse ANY
-    " boundary of comment sections.
-    "
-    "         let pattern = a:back
-    "                    \?     '\v^\s*'.l.'.*\n%(\s*'.l.')@!'
-    "                    \:     '\v^%(\s*'.r.'.*\n)@<!\s*'.r
-    "
-    "         call search(pattern, 'W'.(a:back ? 'b' : ''))
-    "
-    " Inspiration:
-    " $VIMRUNTIME/ftplugin/vim.vim
-    "
-    " NOTE:
-    " if you use this version, in your vimrc, replace the lines:
-    "         ono <silent> [" :norm V["<cr>
-    "         ono <silent> ]" :norm V]"<cr>
-    "
-    " with:
-    "         ono <silent> [" :norm V["j<cr>
-    "         ono <silent> ]" :norm V]"k<cr>
+    let new_address = search(pat, (a:back ? 'b' : '').'nW')
+    if new_address != 0
+        exe new_address
+    endif
 
     if !a:0
-        let g:motion_to_repeat = a:back ? '["' : ']"'
+        let g:motion_to_repeat = a:kind ==# 'text'
+                              \? a:back
+                              \?     '["'
+                              \:     ']"'
+                              \: a:back
+                              \?     '[@'
+                              \:     ']@'
     endif
 endfu
 
