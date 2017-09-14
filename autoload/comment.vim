@@ -137,7 +137,7 @@ fu! comment#object(op_is_c) abort "{{{2
    \in  [ [     0,    -1,           1,   getline('.') ]
    \,     [     1,     1,   line('$'),   getline('.') ] ]
 
-        let [ l , r  ] = s:maybe_trim_cml(getline('.'), l_, r_)
+        let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
             if match(next_line, '{{{\|}}}') != -1
@@ -152,6 +152,15 @@ fu! comment#object(op_is_c) abort "{{{2
             let [l, r]    = s:maybe_trim_cml(next_line, l_, r_)
         endwhile
     endfor
+
+    let Invalid_boundaries = { -> boundaries[0] < 1
+                         \||      boundaries[1] > line('$')
+                         \||      boundaries[0] > boundaries[1]
+                         \}
+
+    if Invalid_boundaries()
+        return
+    endif
 
     "  ┌─ we operate on the object with `c`
     "  │            ┌─ OR the object doesn't end at the very end of the buffer
@@ -171,9 +180,7 @@ fu! comment#object(op_is_c) abort "{{{2
         endwhile
     endif
 
-    " Check that upper boundary comes before lower boundary.
-    " If it does not, something went wrong, and we shouldn't select anything.
-    if boundaries[0] > boundaries[1]
+    if Invalid_boundaries()
         return
     endif
 
@@ -373,19 +380,23 @@ fu! comment#toggle(type, ...) abort "{{{2
         "     <!-- hello world -->                          comment
         "     <!-- <1!-- hello world --1> -->               comment in a comment
         "     <!-- <1!-- <2!-- hello world --2> --1> -->    comment in a comment in a comment
-        "
-        " We need to make sure the right part of the comment leader has several
-        " characters, otherwise the incrementation/decrementation would occur
-        " on numbers which are not concerned. But why >2?
-        "
-        " We also make sure that neither the left part nor the right part of
-        " the comment leader contains a backslash.
-        " Maybe to prevent something like `\1` to be interpreted as
-        " a backref. Shouldn't the nomagic flag `\M` already prevent that?
-        if strlen(r) > 2 && l.r !~ '\\'
-            let left_number  = l[0] . '\zs\d\+\ze' . l[1:]
-            let right_number = r[:-2] . '\zs\d\+\ze' . r[-1:-1]
-            let pat          = '\M' . left_number . '\|' . right_number
+
+        "            ┌─ the end-comment leader should have at least 2 characters:
+        "            │          -->
+        "            │  … otherwise the incrementation/decrementation could affect
+        "            │  numbers inside the comment text, which are not concerned:
+        "            │          r = 'x'
+        "            │          right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
+        "            │                       = '\zs\d\+\zex'
+        if strlen(r) >= 2 && l.r !~ '\\'
+        "                       │
+        "                       └─ No matter the magicness of a pattern, a backslash
+        "                          has always a special meaning. So, we make sure
+        "                          that there's none in the comment leader.
+
+            let left_number  = l[0].'\zs\d\+\ze'.l[1:]
+            let right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
+            let pat          = '\V'.left_number.'\|'.right_number
             let rep          = '\=submatch(0)-uncomment+1 == 0 ? '''' : submatch(0)-uncomment+1'
             let line         = substitute(line, pat, rep, 'g')
         endif
