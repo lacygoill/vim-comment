@@ -262,6 +262,7 @@ fu! comment#search(kind, back, ...) abort "{{{2
     let new_address = search(pat, (a:back ? 'b' : '').'nW')
     if new_address != 0
         exe new_address
+        exe 'norm! zMzv'
     endif
 
     if !a:0
