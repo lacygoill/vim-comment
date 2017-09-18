@@ -58,26 +58,26 @@ ono <silent> ]@ :norm V]@<cr>
 
 " toggle code {{{2
 
-nno  <silent>  gc     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gc     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gcc    :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
+nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gCC    :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  ic     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  ic     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+ono  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gcu    gcic
+nmap <silent>  gCu    gCiC
 
 " toggle text {{{2
 
-nno  <silent>  gC     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gC     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gCC    :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
+nno  <silent>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
+nno  <silent>  gcc    :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
                       \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  iC     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
+ono  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gCu    gCiC
+nmap <silent>  gcu    gcic
 "                │
 "                └─ Uncomment text-object
