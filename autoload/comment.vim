@@ -26,7 +26,7 @@ fu! s:get_cml() abort "{{{2
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
     let cms = get(s:, 'operate_on', 'text') ==# 'code'
-           \?     substitute(&l:cms, '\ze%s', '@', '')
+           \?     substitute(&l:cms, '\ze\s*%s', '@', '')
            \:     &l:cms
 
     " make sure there's a space between the comment leader and the comment:
