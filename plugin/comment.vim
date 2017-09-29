@@ -21,7 +21,15 @@ let g:loaded_comment = 1
 " Alternatively, we could use `:norm gc{object}`, but in a script,
 " `:CommentToggle` is more readable.
 
-com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
+"                                   ┌─ We need to set `s:operate_on`, like we do for all normal commands
+"                                   │  (gc, gC, …). Otherwise, there's a risk that the plugin complains
+"                                   │  that the variable doesn't exist.
+"                                   │
+"                                   │  We choose to set `s:operate_on` to `text` instead of `code`.
+"                                   │  Because, I think we'll want to use the Ex command only for text.
+"                                   │  For code, the normal command is more well-suited.
+"                                   │
+com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
 " duplicate code {{{2
