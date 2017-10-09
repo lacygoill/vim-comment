@@ -7,7 +7,7 @@ let g:autoloaded_comment = 1
 
 " functions {{{1
 fu! comment#duplicate(type) abort "{{{2
-    if count([ 'v', 'V', "\<c-v>" ], a:type)
+    if index([ 'v', 'V', "\<c-v>" ], a:type) != -1
         '<,'>yank
         '<,'>CommentToggle
         norm! `>]p
