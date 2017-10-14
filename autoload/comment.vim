@@ -7,15 +7,29 @@ let g:autoloaded_comment = 1
 
 " functions {{{1
 fu! comment#duplicate(type) abort "{{{2
-    if index([ 'v', 'V', "\<c-v>" ], a:type) != -1
-        '<,'>yank
-        '<,'>CommentToggle
-        norm! `>]p
-    else
-        norm! '[y']
-        '[,']CommentToggle
-        norm! `]]p
-    endif
+    let cb_save = &cb
+    let sel_save = &selection
+    let reg_save = [ getreg('"'), getregtype('"') ]
+    try
+        set cb-=unnamed cb-=unnamedplus
+        set selection=inclusive
+
+        if index([ 'v', 'V', "\<c-v>" ], a:type) != -1
+            '<,'>yank
+            '<,'>CommentToggle
+            norm! `>]p
+        else
+            norm! '[y']
+            '[,']CommentToggle
+            norm! `]]p
+        endif
+    catch
+        return 'echoerr '.string(v:exception)
+    finally
+        let &cb  = cb_save
+        let &sel = sel_save
+        call setreg('"', reg_save[0], reg_save[1])
+    endtry
 endfu
 
 fu! s:get_cml() abort "{{{2
