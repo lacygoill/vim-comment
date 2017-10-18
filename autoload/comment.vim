@@ -5,7 +5,7 @@ if exists('g:autoloaded_comment')
 endif
 let g:autoloaded_comment = 1
 
-" functions {{{1
+" Functions {{{1
 fu! comment#duplicate(type) abort "{{{2
     let cb_save = &cb
     let sel_save = &selection
@@ -30,6 +30,7 @@ fu! comment#duplicate(type) abort "{{{2
         let &sel = sel_save
         call setreg('"', reg_save[0], reg_save[1])
     endtry
+    return ''
 endfu
 
 fu! s:get_cml() abort "{{{2
@@ -111,7 +112,14 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
     return [l_, r_]
 endfu
 
-fu! comment#object(op_is_c) abort "{{{2
+fu! comment#object(op_is_c, ...) abort "{{{2
+"                           │
+"                           └─ you can use this optional argument to exclude arbitrary lines;
+"                              useful to avoid formatting lines in an ascii diagram (`gq`);
+"                              usage example:
+"
+"                                      call comment#object(1, '\|┘\|└\|┐\|┌\|│\|─')
+
     let [ s:l, s:r ] = split(&l:cms, '%s', 1)
     let [ l_, r_ ]   = s:get_cml()
     let boundaries   = [ line('.')+1, line('.')-1 ]
@@ -154,7 +162,7 @@ fu! comment#object(op_is_c) abort "{{{2
         let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
-            if match(next_line, '{{{\|}}}') != -1
+            if match(next_line, '{{{\|}}}'.get(a:, 1, '')) != -1
                 break
             endif
 
@@ -463,3 +471,7 @@ endfu
 fu! comment#what(this) abort "{{{2
     let s:operate_on = a:this
 endfu
+
+" Variables {{{1
+
+let s:operate_on = 'text'
