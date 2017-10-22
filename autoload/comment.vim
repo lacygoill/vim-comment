@@ -215,7 +215,7 @@ fu! comment#object(op_is_c, ...) abort "{{{2
     unlet! s:l s:r
 endfu
 
-fu! comment#search(kind, back, ...) abort "{{{2
+fu! comment#search(kind, fwd, ...) abort "{{{2
     " This function positions the cursor on the next/previous beginning
     " of a comment (kind = 'text' or 'code').
 
@@ -281,7 +281,7 @@ fu! comment#search(kind, back, ...) abort "{{{2
         let pat .= '|^\s*'.l.'\@.*\{\{\{'
     endif
 
-    let new_address = search(pat, (a:back ? 'b' : '').'nW')
+    let new_address = search(pat, (a:fwd ? '' : 'b').'nW')
     if new_address != 0
         exe new_address
         norm! zMzv
@@ -289,12 +289,12 @@ fu! comment#search(kind, back, ...) abort "{{{2
 
     if !a:0
         let g:motion_to_repeat = a:kind ==# 'text'
-                              \? a:back
-                              \?     '["'
-                              \:     ']"'
-                              \: a:back
-                              \?     '[@'
-                              \:     ']@'
+                              \? a:fwd
+                              \?     ']"'
+                              \:     '["'
+                              \: a:fwd
+                              \?     ']@'
+                              \:     '[@'
     endif
 endfu
 

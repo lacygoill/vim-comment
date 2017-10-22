@@ -42,20 +42,20 @@ xno  <silent>  +d     :<c-u>call comment#what('code')<bar>exe comment#duplicate(
 
 " motion {{{2
 
-nno <silent> [" :<c-u>call comment#search('text', 1)<cr>
-nno <silent> ]" :<c-u>call comment#search('text', 0)<cr>
+nno <silent> [" :<c-u>call comment#search('text', 0)<cr>
+nno <silent> ]" :<c-u>call comment#search('text', 1)<cr>
 
-xno <silent> [" :<c-u>call comment#search('text', 1, 'vis')<cr>
-xno <silent> ]" :<c-u>call comment#search('text', 0, 'vis')<cr>
+xno <silent> [" :<c-u>call comment#search('text', 0, 'vis')<cr>
+xno <silent> ]" :<c-u>call comment#search('text', 1, 'vis')<cr>
 
 ono <silent> [" :norm V["<cr>
 ono <silent> ]" :norm V]"<cr>
 
-nno <silent> [@ :<c-u>call comment#search('code', 1)<cr>
-nno <silent> ]@ :<c-u>call comment#search('code', 0)<cr>
+nno <silent> [@ :<c-u>call comment#search('code', 0)<cr>
+nno <silent> ]@ :<c-u>call comment#search('code', 1)<cr>
 
-xno <silent> [@ :<c-u>call comment#search('code', 1, 'vis')<cr>
-xno <silent> ]@ :<c-u>call comment#search('code', 0, 'vis')<cr>
+xno <silent> [@ :<c-u>call comment#search('code', 0, 'vis')<cr>
+xno <silent> ]@ :<c-u>call comment#search('code', 1, 'vis')<cr>
 
 ono <silent> [@ :norm V[@<cr>
 ono <silent> ]@ :norm V]@<cr>
