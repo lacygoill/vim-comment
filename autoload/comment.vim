@@ -41,8 +41,8 @@ fu! s:get_cml() abort "{{{2
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
     let cms = get(s:, 'operate_on', 'text') ==# 'code'
-           \?     substitute(&l:cms, '\ze\s*%s', '@', '')
-           \:     &l:cms
+    \?            substitute(&l:cms, '\ze\s*%s', '@', '')
+    \:            &l:cms
 
     " make sure there's a space between the comment leader and the comment:
     "         "%s   →   " %s
@@ -289,12 +289,12 @@ fu! comment#search(kind, fwd, ...) abort "{{{2
 
     if !a:0
         let g:motion_to_repeat = a:kind ==# 'text'
-                              \? a:fwd
-                              \?     ']"'
-                              \:     '["'
-                              \: a:fwd
-                              \?     ']@'
-                              \:     '[@'
+        \?                       a:fwd
+        \?                           ']"'
+        \:                           '["'
+        \:                       a:fwd
+        \?                           ']@'
+        \:                           '[@'
     endif
 endfu
 
