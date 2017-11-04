@@ -147,11 +147,11 @@ fu! comment#object(op_is_c, ...) abort "{{{2
     "           Hence:
     "                   boundaries[which] != limit
 "}}}
-    let Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
-                             \&&      s:is_relevant(next_line)
-                             \
-                             \||      next_line !~ '\S' && boundaries[which] != limit
-                             \}
+    let l:Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
+                               \&&      s:is_relevant(next_line)
+                               \
+                               \||      next_line !~ '\S' && boundaries[which] != limit
+                               \}
 
     "       ┌─ 0 or 1:  upper or lower boundary
     "       │
@@ -160,7 +160,7 @@ fu! comment#object(op_is_c, ...) abort "{{{2
    \,     [     1,     1,   line('$'),   getline('.') ] ]
 
         let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
-        while Next_line_is_in_object()
+        while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
             if match(next_line, '{{{\|}}}'.get(a:, 1, '')) != -1
                 break
@@ -175,12 +175,12 @@ fu! comment#object(op_is_c, ...) abort "{{{2
         endwhile
     endfor
 
-    let Invalid_boundaries = { -> boundaries[0] < 1
-                         \||      boundaries[1] > line('$')
-                         \||      boundaries[0] > boundaries[1]
-                         \}
+    let l:Invalid_boundaries = { -> boundaries[0] < 1
+                           \||      boundaries[1] > line('$')
+                           \||      boundaries[0] > boundaries[1]
+                           \}
 
-    if Invalid_boundaries()
+    if l:Invalid_boundaries()
         return
     endif
 
@@ -202,7 +202,7 @@ fu! comment#object(op_is_c, ...) abort "{{{2
         endwhile
     endif
 
-    if Invalid_boundaries()
+    if l:Invalid_boundaries()
         return
     endif
 
