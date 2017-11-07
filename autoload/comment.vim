@@ -147,11 +147,11 @@ fu! comment#object(op_is_c, ...) abort "{{{2
     "           Hence:
     "                   boundaries[which] != limit
 "}}}
-    let l:Next_line_is_in_object = { -> s:is_commented(next_line, l, r)
-                               \&&      s:is_relevant(next_line)
-                               \
-                               \||      next_line !~ '\S' && boundaries[which] != limit
-                               \}
+    let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
+    \                                   && s:is_relevant(next_line)
+    \
+    \                                   || next_line !~ '\S' && boundaries[which] != limit
+    \                              }
 
     "       ┌─ 0 or 1:  upper or lower boundary
     "       │
@@ -175,10 +175,10 @@ fu! comment#object(op_is_c, ...) abort "{{{2
         endwhile
     endfor
 
-    let l:Invalid_boundaries = { -> boundaries[0] < 1
-                           \||      boundaries[1] > line('$')
-                           \||      boundaries[0] > boundaries[1]
-                           \}
+    let l:Invalid_boundaries = { ->    boundaries[0] < 1
+    \                               || boundaries[1] > line('$')
+    \                               || boundaries[0] > boundaries[1]
+    \                          }
 
     if l:Invalid_boundaries()
         return
