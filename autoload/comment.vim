@@ -14,7 +14,7 @@ fu! comment#duplicate(type) abort "{{{2
         set cb-=unnamed cb-=unnamedplus
         set selection=inclusive
 
-        if index([ 'v', 'V', "\<c-v>" ], a:type) != -1
+        if index([ 'v', 'V', "\<c-v>" ], a:type) >= 0
             '<,'>yank
             '<,'>CommentToggle
             norm! `>]p
