@@ -412,15 +412,15 @@ fu! comment#toggle(type, ...) abort "{{{2
         "            │          right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
         "            │                       = '\zs\d\+\zex'
         if strlen(r) >= 2 && l.r !~ '\\'
-        "                       │
-        "                       └─ No matter the magicness of a pattern, a backslash
-        "                          has always a special meaning. So, we make sure
-        "                          that there's none in the comment leader.
+        "                            │
+        "                            └─ No matter the magicness of a pattern, a backslash
+        "                               has always a special meaning. So, we make sure
+        "                               that there's none in the comment leader.
 
-            let left_number  = l[0].'\zs\d\+\ze'.l[1:]
-            let right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
+            let left_number  = l[0].'\zs\d\*\ze'.l[1:]
+            let right_number = r[:-2].'\zs\d\*\ze'.r[-1:-1]
             let pat          = '\V'.left_number.'\|'.right_number
-            let rep          = '\=submatch(0)-uncomment+1 == 0 ? '''' : submatch(0)-uncomment+1'
+            let rep          = '\=submatch(0)-uncomment+1 <= 0 ? '''' : submatch(0)-uncomment+1'
             let line         = substitute(line, pat, rep, 'g')
         endif
 
