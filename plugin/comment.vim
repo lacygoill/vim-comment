@@ -1,5 +1,3 @@
-" Guard {{{1
-
 if exists('g:loaded_comment')
     finish
 endif
