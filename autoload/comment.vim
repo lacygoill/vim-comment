@@ -1,5 +1,3 @@
-" guard {{{1
-
 if exists('g:autoloaded_comment')
     finish
 endif
