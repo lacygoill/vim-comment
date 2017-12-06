@@ -32,54 +32,55 @@ com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('
 " Mappings {{{1
 " duplicate code {{{2
 
-"                                              ┌─ we will always want to duplicate code (not text)
-"                                              │
-nno  <silent>  +d     :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
-nno  <silent>  +dd    :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno  <silent>  +d     :<c-u>call comment#what('code')<bar>exe comment#duplicate('vis')<cr>
+"                                                    ┌─ we will always want to duplicate code (not text)
+"                                                    │
+nno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
+nno  <silent><unique>  +dd  :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate
+                            \<bar>exe 'norm! '.v:count1.'g@_'<cr>
+xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>exe comment#duplicate('vis')<cr>
 
 " motion {{{2
 
-nno <silent> [" :<c-u>call comment#search('text', 0)<cr>
-nno <silent> ]" :<c-u>call comment#search('text', 1)<cr>
+nno <silent><unique> [" :<c-u>call comment#search('text', 0)<cr>
+nno <silent><unique> ]" :<c-u>call comment#search('text', 1)<cr>
 
-xno <silent> [" :<c-u>call comment#search('text', 0, 'vis')<cr>
-xno <silent> ]" :<c-u>call comment#search('text', 1, 'vis')<cr>
+xno <silent><unique> [" :<c-u>call comment#search('text', 0, 'vis')<cr>
+xno <silent><unique> ]" :<c-u>call comment#search('text', 1, 'vis')<cr>
 
-ono <silent> [" :norm V["<cr>
-ono <silent> ]" :norm V]"<cr>
+ono <silent><unique> [" :norm V["<cr>
+ono <silent><unique> ]" :norm V]"<cr>
 
-nno <silent> [@ :<c-u>call comment#search('code', 0)<cr>
-nno <silent> ]@ :<c-u>call comment#search('code', 1)<cr>
+nno <silent><unique> [@ :<c-u>call comment#search('code', 0)<cr>
+nno <silent><unique> ]@ :<c-u>call comment#search('code', 1)<cr>
 
-xno <silent> [@ :<c-u>call comment#search('code', 0, 'vis')<cr>
-xno <silent> ]@ :<c-u>call comment#search('code', 1, 'vis')<cr>
+xno <silent><unique> [@ :<c-u>call comment#search('code', 0, 'vis')<cr>
+xno <silent><unique> ]@ :<c-u>call comment#search('code', 1, 'vis')<cr>
 
-ono <silent> [@ :norm V[@<cr>
-ono <silent> ]@ :norm V]@<cr>
+ono <silent><unique> [@ :norm V[@<cr>
+ono <silent><unique> ]@ :norm V]@<cr>
 
 " toggle code {{{2
 
-nno  <silent>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gCC    :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
-                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+nno  <silent><unique>  gC     :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent><unique>  gC     :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
+nno  <silent><unique>  gCC    :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
+                              \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  iC     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
+ono  <silent><unique>  iC     :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent><unique>  iC     :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gCu    gCiC
+nmap <silent><unique>  gCu    gCiC
 
 " toggle text {{{2
 
-nno  <silent>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
-nno  <silent>  gcc    :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
-                      \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+nno  <silent><unique>  gc     :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
+xno  <silent><unique>  gc     :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
+nno  <silent><unique>  gcc    :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
+                              \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
-xno  <silent>  ic     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
+ono  <silent><unique>  ic     :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+xno  <silent><unique>  ic     :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
-nmap <silent>  gcu    gcic
-"                │
-"                └─ Uncomment text-object
+nmap <silent><unique>  gcu    gcic
+"                        │
+"                        └─ Uncomment text-object
