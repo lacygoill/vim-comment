@@ -37,7 +37,7 @@ com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('
 nno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
 nno  <silent><unique>  +dd  :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate
                             \<bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>exe comment#duplicate('vis')<cr>
+xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>call comment#duplicate('vis')<cr>
 
 " motion {{{2
 
