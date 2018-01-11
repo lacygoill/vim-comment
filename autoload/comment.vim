@@ -1,3 +1,8 @@
+if exists('g:autoloaded_comment')
+    finish
+endif
+let g:autoloaded_comment = 1
+
 " Functions {{{1
 fu! comment#duplicate(type) abort "{{{2
     let cb_save = &cb
