@@ -417,19 +417,19 @@ fu! comment#toggle(type, ...) abort "{{{2
             let left_number  = l[0].'\zs\d\*\ze'.l[1:]
             let right_number = r[:-2].'\zs\d\*\ze'.r[-1:-1]
             let pat          = '\V'.left_number.'\|'.right_number
-            let rep          = '\=submatch(0)-uncomment+1 <= 0 ? '''' : submatch(0)-uncomment+1'
-            let line         = substitute(line, pat, rep, 'g')
+            let l:Rep        = {-> submatch(0)-uncomment+1 <= 0 ? '' : submatch(0)-uncomment+1}
+            let line         = substitute(line, pat, l:Rep, 'g')
         endif
 
         if uncomment
-            let pat = '\S.*\s\@<!'
-            let rep = '\=submatch(0)[strlen(l) : -1 - strlen(r)]'
+            let pat   = '\S.*\s\@<!'
+            let l:Rep = {-> submatch(0)[strlen(l) : -1 - strlen(r)]}
         else
-            let pat = '\v^%('.indent.'|\s*)\zs.*'
-            let rep = '\=l.submatch(0).r'
+            let pat   = '\v^%('.indent.'|\s*)\zs.*'
+            let l:Rep = {-> l.submatch(0).r}
         endif
 
-        let line = substitute(line, pat, rep, '')
+        let line = substitute(line, pat, l:Rep, '')
         call setline(l:lnum, line)
     endfor
 
