@@ -271,14 +271,28 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     let mode = mode(1)
     let pat = s:get_search_pat(a:kind)
 
-    " necessary when:
+    " Why `1|`?{{{
+    "
+    " Necessary when:
     "
     "       • we look for a pattern, like the previous beginning of a comment section
     "       • the current line matches
     "       • we want to ignore this match
     "
     " `norm! 1|` + no `c` flag in search() = no match  ✔
-    let seq = '1|'
+    "}}}
+    " Why not in operator-pending mode?{{{
+    "
+    " This function is going to return something like:
+    "
+    "     1|123G
+    "
+    " For Vim, `1|` will be the object, and `123G` just a simple motion.
+    " That's not what we want.
+    "}}}
+    let seq = index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
+    \?            '1|'
+    \:            ''
 
     let new_address = search(pat, (a:is_fwd ? '' : 'b').'nW')
     if new_address != 0
@@ -290,6 +304,8 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     if mode ==# 'n'
         let seq .= 'zMzv'
     elseif index(['v', 'V', "\<c-v>"], mode) >= 0
+        " don't close fold in visual mode,
+        " it makes Vim select whole folds instead of some part of them
         let seq .= 'zv'
     endif
 
