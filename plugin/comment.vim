@@ -41,23 +41,11 @@ xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>call comment#dup
 
 " motion {{{2
 
-nno  <silent><unique>  ["  :<c-u>call comment#search('text', 0)<cr>
-nno  <silent><unique>  ]"  :<c-u>call comment#search('text', 1)<cr>
+noremap  <expr><silent><unique>  ["  comment#search('text', 0)
+noremap  <expr><silent><unique>  ]"  comment#search('text', 1)
 
-xno  <silent><unique>  ["  :<c-u>call comment#search('text', 0, 'vis')<cr>
-xno  <silent><unique>  ]"  :<c-u>call comment#search('text', 1, 'vis')<cr>
-
-ono  <silent><unique>  ["  :norm V["<cr>
-ono  <silent><unique>  ]"  :norm V]"<cr>
-
-nno  <silent><unique>  [@  :<c-u>call comment#search('code', 0)<cr>
-nno  <silent><unique>  ]@  :<c-u>call comment#search('code', 1)<cr>
-
-xno  <silent><unique>  [@  :<c-u>call comment#search('code', 0, 'vis')<cr>
-xno  <silent><unique>  ]@  :<c-u>call comment#search('code', 1, 'vis')<cr>
-
-ono  <silent><unique>  [@  :norm V[@<cr>
-ono  <silent><unique>  ]@  :norm V]@<cr>
+noremap  <expr><silent><unique>  [@  comment#search('code', 0)
+noremap  <expr><silent><unique>  ]@  comment#search('code', 1)
 
 " toggle code {{{2
 

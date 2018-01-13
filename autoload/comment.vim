@@ -3,8 +3,9 @@ if exists('g:autoloaded_comment')
 endif
 let g:autoloaded_comment = 1
 
-" Functions {{{1
-fu! comment#duplicate(type) abort "{{{2
+let s:operate_on = 'text'
+
+fu! comment#duplicate(type) abort "{{{1
     let cb_save = &cb
     let sel_save = &selection
     let reg_save = [ getreg('"'), getregtype('"') ]
@@ -30,7 +31,7 @@ fu! comment#duplicate(type) abort "{{{2
     endtry
 endfu
 
-fu! s:get_cml() abort "{{{2
+fu! s:get_cml() abort "{{{1
     " This function should return a list of 2 strings:
     "
     "     • the beginning of a comment string; e.g. for vim:    `" `
@@ -58,7 +59,51 @@ fu! s:get_cml() abort "{{{2
     "                          after `%s` (in this case, the 2nd item will be '')
 endfu
 
-fu! s:is_commented(line, l, r) abort "{{{2
+fu! s:get_search_pat(kind) abort "{{{1
+    " [ '"' ]         in Vim
+    " [ '/*', '*/' ]  in C
+    let cml = split(&l:cms, '%s')
+
+    " \V"\v           in Vim
+    " \V/*\v          in C
+    let l = '\V'.escape(matchstr(cml[0], '\S\+'), '\').'\v'
+
+    " \V"\v           in Vim
+    " \V*/\v          in C
+    let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
+
+    if a:kind ==# 'text'
+        " We're looking for a commented line of text.
+        " It must begin a fold.
+        " OR the line before must be:
+        "         • NOT commented
+        "         • a commented line of code
+        "
+        "                                 ┌──────────── NO commented line just before
+        "                                 │           ┌ a commented line of text
+        "              ┌──────────────────┤┌──────────┤
+        let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@@!'
+        let pat .= '|^%(^\s*'.l.'\@.*\n)@<=\s*'.l.'\@@!'
+        "            └────────────────────┤
+        "                                 └──────────── a commented line of code
+        "                                               just before a commented line of text
+        let pat .= '|^\s*'.l.'\@@!.*\{\{\{'
+
+    else
+        "                                   ┌────────── NO commented line just before
+        "                                   │         ┌ a commented line of code
+        "                ┌──────────────────┤┌────────┤
+        let pat  =    '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@'
+        let pat .= '|^%(^\s*'.l.'\@@!.*\n)@<=\s*'.l.'\@'
+        "            └──────────────────────┤
+        "                                   └ a commented line of text
+        "                                     just before a commented line of code
+        let pat .= '|^\s*'.l.'\@.*\{\{\{'
+    endif
+    return pat
+endfu
+
+fu! s:is_commented(line, l, r) abort "{{{1
     "                            ┌─ trim beginning whitespace
     "                            │
     let line = matchstr(a:line, '\S.*\s\@<!')
@@ -72,14 +117,14 @@ fu! s:is_commented(line, l, r) abort "{{{2
     "                             it also ends with the end-comment leader ┘
 endfu
 
-fu! s:is_commented_code(line) abort "{{{2
+fu! s:is_commented_code(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
     return   stridx(line, s:l.'@') == 0
         &&   line[strlen(line)-strlen(s:r):] ==# s:r
 endfu
 
-fu! s:is_commented_text(line) abort "{{{2
+fu! s:is_commented_text(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
     return   stridx(line, s:l) == 0
@@ -87,12 +132,12 @@ fu! s:is_commented_text(line) abort "{{{2
        \&&   line[strlen(line)-strlen(s:r):] ==# s:r
 endfu
 
-fu! s:is_relevant(line) abort "{{{2
+fu! s:is_relevant(line) abort "{{{1
     return !(s:operate_on ==# 'code' && s:is_commented_text(a:line))
        \&& !(s:operate_on ==# 'text' && s:is_commented_code(a:line))
 endfu
 
-fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
+fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
     let [l_, r_] = [ a:l_    , a:r_   ]
     let [l, r]   = [ l_[0:-2], r_[1:] ]
     "                  └────┤    └──┤
@@ -109,7 +154,7 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{2
     return [l_, r_]
 endfu
 
-fu! comment#object(op_is_c, ...) abort "{{{2
+fu! comment#object(op_is_c, ...) abort "{{{1
 "                           │
 "                           └─ you can use this optional argument to exclude arbitrary lines;
 "                              useful to avoid formatting lines in an ascii diagram (`gq`);
@@ -212,7 +257,7 @@ fu! comment#object(op_is_c, ...) abort "{{{2
     unlet! s:l s:r
 endfu
 
-fu! comment#search(kind, is_fwd, ...) abort "{{{2
+fu! comment#search(kind, is_fwd, ...) abort "{{{1
     " This function positions the cursor on the next/previous beginning
     " of a comment (kind = 'text' or 'code').
 
@@ -220,25 +265,11 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{2
     " $VIMRUNTIME/ftplugin/vim.vim
 
     if empty(&l:cms)
-        return
+        return ''
     endif
 
-    " [ '"' ]         in Vim
-    " [ '/*', '*/' ]  in C
-    let cml = split(&l:cms, '%s')
-
-    " \V"\v           in Vim
-    " \V/*\v          in C
-    let l = '\V'.escape(matchstr(cml[0], '\S\+'), '\').'\v'
-
-    " \V"\v           in Vim
-    " \V*/\v          in C
-    let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
-
-    " visual mode
-    if a:0
-        norm! gv
-    endif
+    let mode = mode(1)
+    let pat = s:get_search_pat(a:kind)
 
     " necessary when:
     "
@@ -247,55 +278,25 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{2
     "       • we want to ignore this match
     "
     " `norm! 1|` + no `c` flag in search() = no match  ✔
-    norm! 1|
-
-    if a:kind ==# 'text'
-        " We're looking for a commented line of text.
-        " It must begin a fold.
-        " OR the line before must be:
-        "         • NOT commented
-        "         • a commented line of code
-        "
-        "                                 ┌──────────── NO commented line just before
-        "                                 │           ┌ a commented line of text
-        "              ┌──────────────────┤┌──────────┤
-        let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@@!'
-        let pat .= '|^%(^\s*'.l.'\@.*\n)@<=\s*'.l.'\@@!'
-        "            └────────────────────┤
-        "                                 └──────────── a commented line of code
-        "                                               just before a commented line of text
-        let pat .= '|^\s*'.l.'\@@!.*\{\{\{'
-
-    else
-        "                                   ┌────────── NO commented line just before
-        "                                   │         ┌ a commented line of code
-        "                ┌──────────────────┤┌────────┤
-        let pat  =    '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@'
-        let pat .= '|^%(^\s*'.l.'\@@!.*\n)@<=\s*'.l.'\@'
-        "            └──────────────────────┤
-        "                                   └ a commented line of text
-        "                                     just before a commented line of code
-        let pat .= '|^\s*'.l.'\@.*\{\{\{'
-    endif
+    let seq = '1|'
 
     let new_address = search(pat, (a:is_fwd ? '' : 'b').'nW')
     if new_address != 0
-        exe new_address
-        norm! zMzv
+        let seq .= new_address.'G'
+    else
+        return ''
     endif
 
-    if !a:0
-        let g:motion_to_repeat = a:kind ==# 'text'
-        \?                       a:is_fwd
-        \?                           ']"'
-        \:                           '["'
-        \:                       a:is_fwd
-        \?                           ']@'
-        \:                           '[@'
+    if mode ==# 'n'
+        let seq .= 'zMzv'
+    elseif index(['v', 'V', "\<c-v>"], mode) >= 0
+        let seq .= 'zv'
     endif
+
+    return seq
 endfu
 
-fu! comment#toggle(type, ...) abort "{{{2
+fu! comment#toggle(type, ...) abort "{{{1
     if empty(&l:cms)
         return
     endif
@@ -465,10 +466,6 @@ fu! comment#toggle(type, ...) abort "{{{2
     unlet! s:l s:r
 endfu
 
-fu! comment#what(this) abort "{{{2
+fu! comment#what(this) abort "{{{1
     let s:operate_on = a:this
 endfu
-
-" Variables {{{1
-
-let s:operate_on = 'text'
