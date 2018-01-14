@@ -269,6 +269,12 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     endif
 
     let mode = mode(1)
+
+    let seq = ''
+    if mode ==# 'n'
+        let seq .= "m'"
+    endif
+
     let pat = s:get_search_pat(a:kind)
 
     " Why `1|`?{{{
@@ -290,7 +296,7 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     " For Vim, `1|` will be the object, and `123G` just a simple motion.
     " That's not what we want.
     "}}}
-    let seq = index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
+    let seq .= index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
     \?            '1|'
     \:            ''
 
