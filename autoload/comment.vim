@@ -8,7 +8,7 @@ let s:operate_on = 'text'
 fu! comment#duplicate(type) abort "{{{1
     let cb_save = &cb
     let sel_save = &selection
-    let reg_save = [ getreg('"'), getregtype('"') ]
+    let reg_save = [ '"', getreg('"'), getregtype('"') ]
     try
         set cb-=unnamed cb-=unnamedplus
         set selection=inclusive
@@ -27,7 +27,7 @@ fu! comment#duplicate(type) abort "{{{1
     finally
         let &cb  = cb_save
         let &sel = sel_save
-        call setreg('"', reg_save[0], reg_save[1])
+        call call('setreg', reg_save)
     endtry
 endfu
 
