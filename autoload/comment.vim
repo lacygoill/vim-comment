@@ -70,7 +70,7 @@ fu! s:get_search_pat(kind) abort "{{{1
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
+    let r = len(cml) ==# 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
 
     if a:kind is# 'text'
         " We're looking for a commented line of text.
@@ -110,25 +110,25 @@ fu! s:is_commented(line, l, r) abort "{{{1
     "                                └────┤
     "                                     └ trim ending whitespace
 
-    "                           ┌ the line begins with the comment leader
-    "      ┌────────────────────┤
-    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] is# a:r
-    "                                └─────────────────────────────────────┤
-    "                             it also ends with the end-comment leader ┘
+    "                            ┌ the line begins with the comment leader
+    "      ┌─────────────────────┤
+    return stridx(line, a:l) ==# 0 && line[strlen(line)-strlen(a:r):] is# a:r
+    "                                 └─────────────────────────────────────┤
+    "                              it also ends with the end-comment leader ┘
 endfu
 
 fu! s:is_commented_code(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:l.'@') == 0
+    return   stridx(line, s:l.'@') ==# 0
         &&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_commented_text(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:l) == 0
-       \&&   stridx(line, s:l.'@') == -1
+    return   stridx(line, s:l) ==# 0
+       \&&   stridx(line, s:l.'@') ==# -1
        \&&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
