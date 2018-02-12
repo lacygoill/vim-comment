@@ -13,7 +13,7 @@ fu! comment#duplicate(type) abort "{{{1
         set cb-=unnamed cb-=unnamedplus
         set selection=inclusive
 
-        if a:type ==# 'vis'
+        if a:type is# 'vis'
             '<,'>yank
             '<,'>CommentToggle
             norm! `>]p
@@ -38,7 +38,7 @@ fu! s:get_cml() abort "{{{1
     "     • the end of a comment string;       e.g. for html:   ` -->`
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
-    let cms = get(s:, 'operate_on', 'text') ==# 'code'
+    let cms = get(s:, 'operate_on', 'text') is# 'code'
     \?            substitute(&l:cms, '\ze\s*%s', '@', '')
     \:            &l:cms
 
@@ -72,7 +72,7 @@ fu! s:get_search_pat(kind) abort "{{{1
     " \V*/\v          in C
     let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
 
-    if a:kind ==# 'text'
+    if a:kind is# 'text'
         " We're looking for a commented line of text.
         " It must begin a fold.
         " OR the line before must be:
@@ -112,7 +112,7 @@ fu! s:is_commented(line, l, r) abort "{{{1
 
     "                           ┌ the line begins with the comment leader
     "      ┌────────────────────┤
-    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] ==# a:r
+    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] is# a:r
     "                                └─────────────────────────────────────┤
     "                             it also ends with the end-comment leader ┘
 endfu
@@ -121,7 +121,7 @@ fu! s:is_commented_code(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
     return   stridx(line, s:l.'@') == 0
-        &&   line[strlen(line)-strlen(s:r):] ==# s:r
+        &&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_commented_text(line) abort "{{{1
@@ -129,12 +129,12 @@ fu! s:is_commented_text(line) abort "{{{1
 
     return   stridx(line, s:l) == 0
        \&&   stridx(line, s:l.'@') == -1
-       \&&   line[strlen(line)-strlen(s:r):] ==# s:r
+       \&&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_relevant(line) abort "{{{1
-    return !(s:operate_on ==# 'code' && s:is_commented_text(a:line))
-       \&& !(s:operate_on ==# 'text' && s:is_commented_code(a:line))
+    return !(s:operate_on is# 'code' && s:is_commented_text(a:line))
+       \&& !(s:operate_on is# 'text' && s:is_commented_code(a:line))
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
@@ -271,7 +271,7 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     let mode = mode(1)
 
     let seq = ''
-    if mode ==# 'n'
+    if mode is# 'n'
         let seq .= "m'"
     endif
 
@@ -307,7 +307,7 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
         return ''
     endif
 
-    if mode ==# 'n'
+    if mode is# 'n'
         let seq .= 'zMzv'
     elseif index(['v', 'V', "\<c-v>"], mode) >= 0
         " don't close fold in visual mode,
@@ -325,9 +325,9 @@ fu! comment#toggle(type, ...) abort "{{{1
 
     " Define the range of lines to (un)comment.
 
-    if a:type ==# 'Ex'
+    if a:type is# 'Ex'
         let [lnum1, lnum2] = [a:1, a:2]
-    elseif a:type ==# 'visual'
+    elseif a:type is# 'visual'
         let [lnum1, lnum2] = [line("'<"), line("'>")]
     else
         let [lnum1, lnum2] = [line("'["), line("']")]

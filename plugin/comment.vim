@@ -54,7 +54,7 @@ xno  <silent><unique>  gC   :<c-u>call comment#what('code')<bar>call comment#tog
 nno  <silent><unique>  gCC  :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
                             \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(v:operator ==# 'c')<cr>
+ono  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(v:operator is# 'c')<cr>
 xno  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
 
 nmap  <silent><unique>  gCu  gCiC
@@ -66,7 +66,7 @@ xno  <silent><unique>  gc   :<c-u>call comment#what('text')<bar>call comment#tog
 nno  <silent><unique>  gcc  :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
                             \<bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(v:operator ==# 'c')<cr>
+ono  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(v:operator is# 'c')<cr>
 xno  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
 
 nmap  <silent><unique>  gcu  gcic
