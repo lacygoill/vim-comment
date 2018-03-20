@@ -70,7 +70,7 @@ fu! s:get_search_pat(kind) abort "{{{1
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let r = len(cml) ==# 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
+    let r = len(cml) == 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
 
     if a:kind is# 'text'
         " We're looking for a commented line of text.
@@ -110,25 +110,25 @@ fu! s:is_commented(line, l, r) abort "{{{1
     "                                └────┤
     "                                     └ trim ending whitespace
 
-    "                            ┌ the line begins with the comment leader
-    "      ┌─────────────────────┤
-    return stridx(line, a:l) ==# 0 && line[strlen(line)-strlen(a:r):] is# a:r
-    "                                 └─────────────────────────────────────┤
-    "                              it also ends with the end-comment leader ┘
+    "                           ┌ the line begins with the comment leader
+    "      ┌────────────────────┤
+    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] is# a:r
+    "                                └─────────────────────────────────────┤
+    "                             it also ends with the end-comment leader ┘
 endfu
 
 fu! s:is_commented_code(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:l.'@') ==# 0
+    return   stridx(line, s:l.'@') == 0
         &&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_commented_text(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
-    return   stridx(line, s:l) ==# 0
-       \&&   stridx(line, s:l.'@') ==# -1
+    return   stridx(line, s:l) == 0
+       \&&   stridx(line, s:l.'@') == -1
        \&&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
@@ -192,7 +192,7 @@ fu! comment#object(op_is_c, ...) abort "{{{1
     let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
     \                                   && s:is_relevant(next_line)
     \
-    \                                   || next_line !~ '\S' && boundaries[which] !=# limit
+    \                                   || next_line !~ '\S' && boundaries[which] != limit
     \                              }
 
     "       ┌─ 0 or 1:  upper or lower boundary
@@ -204,7 +204,7 @@ fu! comment#object(op_is_c, ...) abort "{{{1
         let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
-            if match(next_line, '{{{\|}}}'.get(a:, 1, '')) !=# -1
+            if match(next_line, '{{{\|}}}'.get(a:, 1, '')) != -1
                 break
             endif
 
@@ -229,7 +229,7 @@ fu! comment#object(op_is_c, ...) abort "{{{1
     "  ┌─ we operate on the object with `c`
     "  │            ┌─ OR the object doesn't end at the very end of the buffer
     "  │            │
-    if a:op_is_c || boundaries[1] !=# line('$')
+    if a:op_is_c || boundaries[1] != line('$')
         " make sure there's no empty lines at the BEGINNING of the object
         " by incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
@@ -301,7 +301,7 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     \:            ''
 
     let new_address = search(pat, (a:is_fwd ? '' : 'b').'nW')
-    if new_address !=# 0
+    if new_address != 0
         let seq .= new_address.'G'
     else
         return ''
