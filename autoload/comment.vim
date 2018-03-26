@@ -39,8 +39,8 @@ fu! s:get_cml() abort "{{{1
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
     let cms = get(s:, 'operate_on', 'text') is# 'code'
-    \?            substitute(&l:cms, '\ze\s*%s', '@', '')
-    \:            &l:cms
+    \         ?    substitute(&l:cms, '\ze\s*%s', '@', '')
+    \         :    &l:cms
 
     " make sure there's a space between the comment leader and the comment:
     "         "%s   →   " %s
@@ -297,8 +297,8 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     " That's not what we want.
     "}}}
     let seq .= index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
-    \?            '1|'
-    \:            ''
+    \          ?    '1|'
+    \          :    ''
 
     let new_address = search(pat, (a:is_fwd ? '' : 'b').'nW')
     if new_address !=# 0
