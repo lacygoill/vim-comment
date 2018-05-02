@@ -36,7 +36,7 @@ com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('
 "                                                    │
 nno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
 nno  <silent><unique>  +dd  :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate
-                            \<bar>exe 'norm! '.v:count1.'g@_'<cr>
+                           \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
 xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>call comment#duplicate('vis')<cr>
 
 " motion {{{2
@@ -52,7 +52,7 @@ noremap  <expr><silent><unique>  ]@  comment#search('code', 1)
 nno  <silent><unique>  gC   :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
 xno  <silent><unique>  gC   :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
 nno  <silent><unique>  gCC  :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
-                            \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+                           \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
 
 ono  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(v:operator is# 'c')<cr>
 xno  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
@@ -64,7 +64,7 @@ nmap  <silent><unique>  gCu  gCiC
 nno  <silent><unique>  gc   :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
 xno  <silent><unique>  gc   :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
 nno  <silent><unique>  gcc  :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
-                            \<bar>exe 'norm! g@'.v:count1.'_'<cr>
+                           \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
 
 ono  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(v:operator is# 'c')<cr>
 xno  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>

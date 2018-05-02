@@ -128,13 +128,13 @@ fu! s:is_commented_text(line) abort "{{{1
     let line = matchstr(a:line, '\S.*\s\@<!')
 
     return   stridx(line, s:l) ==# 0
-       \&&   stridx(line, s:l.'@') ==# -1
-       \&&   line[strlen(line)-strlen(s:r):] is# s:r
+       \ &&  stridx(line, s:l.'@') ==# -1
+       \ &&  line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_relevant(line) abort "{{{1
-    return !(s:operate_on is# 'code' && s:is_commented_text(a:line))
-       \&& !(s:operate_on is# 'text' && s:is_commented_code(a:line))
+    return  !(s:operate_on is# 'code' && s:is_commented_text(a:line))
+       \ && !(s:operate_on is# 'text' && s:is_commented_code(a:line))
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
@@ -198,8 +198,8 @@ fu! comment#object(op_is_c, ...) abort "{{{1
     "       ┌─ 0 or 1:  upper or lower boundary
     "       │
     for   [ which,   dir,       limit,      next_line ]
-   \in  [ [     0,    -1,           1,   getline('.') ]
-   \,     [     1,     1,   line('$'),   getline('.') ] ]
+  \ in  [ [     0,    -1,           1,   getline('.') ]
+  \ ,     [     1,     1,   line('$'),   getline('.') ] ]
 
         let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
@@ -385,9 +385,9 @@ fu! comment#toggle(type, ...) abort "{{{1
         " IOW: if you aren't a commented line of text, you can't be
         " a commented line of code.
 
-        if line =~ '\S'
-      \&& !s:is_commented(line, l, r)
-      \&&  s:is_relevant(line)
+        if  line =~ '\S'
+      \ && !s:is_commented(line, l, r)
+      \ &&  s:is_relevant(line)
             let uncomment = 0
         endif
     endfor
