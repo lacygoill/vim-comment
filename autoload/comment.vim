@@ -154,14 +154,7 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
     return [l_, r_]
 endfu
 
-fu! comment#object(op_is_c, ...) abort "{{{1
-"                           │
-"                           └─ you can use this optional argument to exclude arbitrary lines;
-"                              useful to avoid formatting lines in an ascii diagram (`gq`);
-"                              usage example:
-"
-"                                      call comment#object(1, '\|┘\|└\|┐\|┌\|│\|─')
-
+fu! comment#object(op_is_c) abort "{{{1
     let [ s:l, s:r ] = split(&l:cms, '%s', 1)
     let [ l_, r_ ]   = s:get_cml()
     let boundaries   = [ line('.')+1, line('.')-1 ]
@@ -204,7 +197,7 @@ fu! comment#object(op_is_c, ...) abort "{{{1
         let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
-            if match(next_line, '{{{\|}}}'.get(a:, 1, '')) !=# -1
+            if match(next_line, '{{{\|}}}') !=# -1
                 break
             endif
 
