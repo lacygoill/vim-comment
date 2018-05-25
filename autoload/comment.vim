@@ -433,16 +433,16 @@ fu! comment#toggle(type, ...) abort "{{{1
             let left_number  = l[0].'\zs\d\*\ze'.l[1:]
             let right_number = r[:-2].'\zs\d\*\ze'.r[-1:-1]
             let pat          = '\V'.left_number.'\|'.right_number
-            let l:Rep        = {-> submatch(0)-uncomment+1 <= 0 ? '' : submatch(0)-uncomment+1}
+            let l:Rep        = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
             let line         = substitute(line, pat, l:Rep, 'g')
         endif
 
         if uncomment
             let pat   = '\S.*\s\@<!'
-            let l:Rep = {-> submatch(0)[strlen(l) : -1 - strlen(r)]}
+            let l:Rep = {m -> m[0][strlen(l) : -1 - strlen(r)]}
         else
             let pat   = '\v^%('.indent.'|\s*)\zs.*'
-            let l:Rep = {-> l.submatch(0).r}
+            let l:Rep = {m -> l.m[0].r}
         endif
 
         let line = substitute(line, pat, l:Rep, '')
