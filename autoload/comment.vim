@@ -8,7 +8,7 @@ let s:operate_on = 'text'
 fu! comment#duplicate(type) abort "{{{1
     let cb_save = &cb
     let sel_save = &selection
-    let reg_save = [ '"', getreg('"'), getregtype('"') ]
+    let reg_save = ['"', getreg('"'), getregtype('"')]
     try
         set cb-=unnamed cb-=unnamedplus
         set selection=inclusive
@@ -60,8 +60,8 @@ fu! s:get_cml() abort "{{{1
 endfu
 
 fu! s:get_search_pat(kind) abort "{{{1
-    " [ '"' ]         in Vim
-    " [ '/*', '*/' ]  in C
+    " ['"']         in Vim
+    " ['/*', '*/']  in C
     let cml = split(&l:cms, '%s')
 
     " \V"\v           in Vim
@@ -138,11 +138,13 @@ fu! s:is_relevant(line) abort "{{{1
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
-    let [l_, r_] = [ a:l_    , a:r_   ]
-    let [l, r]   = [ l_[0:-2], r_[1:] ]
-    "                  └────┤    └──┤
-    "                       │       └ remove 1st  whitespace
-    "                       └──────── remove last whitespace
+    let [l_, r_] = [a:l_    , a:r_]
+    let [l, r]   = [l_[0:-2], r_[1:]]
+    "                 ├────┘    ├──┘{{{
+    "                 │         └ remove 1st  whitespace
+    "                 │
+    "                 └ remove last whitespace
+    "}}}
 
     " if the line is commented with the trimmed comment leaders, but not with
     " the original ones, return the trimmed ones
@@ -155,9 +157,9 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
 endfu
 
 fu! comment#object(op_is_c) abort "{{{1
-    let [ s:l, s:r ] = split(&l:cms, '%s', 1)
-    let [ l_, r_ ]   = s:get_cml()
-    let boundaries   = [ line('.')+1, line('.')-1 ]
+    let [s:l, s:r] = split(&l:cms, '%s', 1)
+    let [l_, r_]   = s:get_cml()
+    let boundaries = [line('.')+1, line('.')-1]
 
     " We consider a line to be in a comment object iff it's:{{{
     "
@@ -188,13 +190,13 @@ fu! comment#object(op_is_c) abort "{{{1
     \                                   || next_line !~ '\S' && boundaries[which] !=# limit
     \                              }
 
-    "       ┌─ 0 or 1:  upper or lower boundary
+    "       ┌ 0 or 1:  upper or lower boundary
     "       │
-    for   [ which,   dir,       limit,      next_line ]
-  \ in  [ [     0,    -1,           1,   getline('.') ]
-  \ ,     [     1,     1,   line('$'),   getline('.') ] ]
+    for  [which,   dir,       limit,      next_line]
+  \ in  [[    0,    -1,           1,   getline('.')]
+  \ ,    [    1,     1,   line('$'),   getline('.')]]
 
-        let [ l , r ] = s:maybe_trim_cml(getline('.'), l_, r_)
+        let [l , r] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
             if match(next_line, '{{{\|}}}') !=# -1
@@ -328,7 +330,7 @@ fu! comment#toggle(type, ...) abort "{{{1
 
     " get original comment leader
     " (no space added for better readability; no `@` for code)
-    let [ s:l, s:r ] = split(&l:cms, '%s', 1)
+    let [s:l, s:r] = split(&l:cms, '%s', 1)
 
     "    ┌─ comment leader (modified: add padding space, and `@` for code)
     "    │   ┌─ end-comment leader ('' if there's none)
