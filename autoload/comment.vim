@@ -351,8 +351,8 @@ fu! comment#toggle(type, ...) abort "{{{1
     "               │                       │
     "               │                       └─ should be 2 or 0
     let uncomment = 2
-    for l:lnum in range(lnum1, lnum2)
-        let line = getline(l:lnum)
+    for lnum in range(lnum1, lnum2)
+        let line = getline(lnum)
         " If needed for the current line, trim the comment leader.
         let [l, r] = s:maybe_trim_cml(line, l_, r_)
 
@@ -398,8 +398,8 @@ fu! comment#toggle(type, ...) abort "{{{1
     " To do this, we need to know the level of indentation of the first line.
     let indent = matchstr(getline(lnum1), '^\s*')
 
-    for l:lnum in range(lnum1,lnum2)
-        let line = getline(l:lnum)
+    for lnum in range(lnum1,lnum2)
+        let line = getline(lnum)
 
         " Don't do anything if the line is:
         "
@@ -448,7 +448,7 @@ fu! comment#toggle(type, ...) abort "{{{1
         endif
 
         let line = substitute(line, pat, l:Rep, '')
-        call setline(l:lnum, line)
+        call setline(lnum, line)
     endfor
 
     " We execute all the autocmds using the event `User` and the filter
