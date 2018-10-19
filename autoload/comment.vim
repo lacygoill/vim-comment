@@ -185,10 +185,10 @@ fu! comment#object(op_is_c) abort "{{{1
     "                   boundaries[which] !=# limit
 "}}}
     let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
-    \                                   && s:is_relevant(next_line)
-    \
-    \                                   || next_line !~ '\S' && boundaries[which] !=# limit
-    \                              }
+        \     && s:is_relevant(next_line)
+        \
+        \     || next_line !~ '\S' && boundaries[which] !=# limit
+        \ }
 
     "       ┌ 0 or 1:  upper or lower boundary
     "       │
