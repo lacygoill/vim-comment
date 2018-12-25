@@ -106,9 +106,9 @@ endfu
 fu! s:is_commented(line, l, r) abort "{{{1
     "                            ┌─ trim beginning whitespace
     "                            │
-    let line = matchstr(a:line, '\S.*\s\@<!')
-    "                                └────┤
-    "                                     └ trim ending whitespace
+    let line = matchstr(a:line, '\S.*\s\@1<!')
+    "                                └─────┤
+    "                                      └ trim ending whitespace
 
     "                            ┌ the line begins with the comment leader
     "      ┌─────────────────────┤
@@ -118,14 +118,14 @@ fu! s:is_commented(line, l, r) abort "{{{1
 endfu
 
 fu! s:is_commented_code(line) abort "{{{1
-    let line = matchstr(a:line, '\S.*\s\@<!')
+    let line = matchstr(a:line, '\S.*\s\@1<!')
 
     return   stridx(line, s:l.'@') ==# 0
         &&   line[strlen(line)-strlen(s:r):] is# s:r
 endfu
 
 fu! s:is_commented_text(line) abort "{{{1
-    let line = matchstr(a:line, '\S.*\s\@<!')
+    let line = matchstr(a:line, '\S.*\s\@1<!')
 
     return   stridx(line, s:l) ==# 0
        \ &&  stridx(line, s:l.'@') ==# -1
@@ -440,7 +440,7 @@ fu! comment#toggle(type, ...) abort "{{{1
         endif
 
         if uncomment
-            let pat   = '\S.*\s\@<!'
+            let pat   = '\S.*\s\@1<!'
             let l:Rep = {m -> m[0][strlen(l) : -1 - strlen(r)]}
         else
             let pat   = '\v^%('.indent.'|\s*)\zs.*'
