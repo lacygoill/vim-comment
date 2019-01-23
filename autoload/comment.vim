@@ -34,8 +34,8 @@ endfu
 fu! s:get_cml() abort "{{{1
     " This function should return a list of 2 strings:
     "
-    "     • the beginning of a comment string; e.g. for vim:    `" `
-    "     • the end of a comment string;       e.g. for html:   ` -->`
+    "     - the beginning of a comment string; e.g. for vim:    `" `
+    "     - the end of a comment string;       e.g. for html:   ` -->`
 
     " if we operate on lines of code, make sure the comment leader ends with `@`
     let cms = get(s:, 'operate_on', 'text') is# 'code'
@@ -76,8 +76,8 @@ fu! s:get_search_pat(kind) abort "{{{1
         " We're looking for a commented line of text.
         " It must begin a fold.
         " OR the line before must be:
-        "         • NOT commented
-        "         • a commented line of code
+        "         - NOT commented
+        "         - a commented line of code
         "
         "                                 ┌──────────── NO commented line just before
         "                                 │           ┌ a commented line of text
@@ -163,11 +163,11 @@ fu! comment#object(op_is_c) abort "{{{1
 
     " We consider a line to be in a comment object iff it's:{{{
     "
-    "         • commented
-    "         • relevant
-    "         • not the start/end of a fold
+    "         - commented
+    "         - relevant
+    "         - not the start/end of a fold
     " … OR:
-    "         • an empty line
+    "         - an empty line
     "
     "           If the boundary has reached the end/beginning of the buffer,
     "           there's no next line.
@@ -276,9 +276,9 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
     "
     " Necessary when:
     "
-    "       • we look for a pattern, like the previous beginning of a comment section
-    "       • the current line matches
-    "       • we want to ignore this match
+    "       - we look for a pattern, like the previous beginning of a comment section
+    "       - the current line matches
+    "       - we want to ignore this match
     "
     " `norm! 1|` + no `c` flag in search() = no match  ✔
     "}}}
@@ -340,8 +340,8 @@ fu! comment#toggle(type, ...) abort "{{{1
     " Decide what to do:   comment or uncomment?
     " The decision will be stored in the variable `uncomment`:
     "
-    "         • 0 = the operator will comment    the range of lines
-    "         • 2 = "                 uncomment  "
+    "         - 0 = the operator will comment    the range of lines
+    "         - 2 = "                 uncomment  "
 
     "               ┌─ Why 2 instead of 1?
     "               │  Nested comments use numbers to denote the level of imbrication.
@@ -358,9 +358,9 @@ fu! comment#toggle(type, ...) abort "{{{1
 
         " To comment a range of lines, one of them must be:
         "
-        "         • not empty
-        "         • not commented
-        "         • relevant
+        "         - not empty
+        "         - not commented
+        "         - relevant
         "
         " What is an irrelevant line?
         " A commented line of text, when we operate on code. (1)
@@ -403,8 +403,8 @@ fu! comment#toggle(type, ...) abort "{{{1
 
         " Don't do anything if the line is:
         "
-        "         • empty
-        "         • irrelevant
+        "         - empty
+        "         - irrelevant
 
         if  line !~ '\S' || !s:is_relevant(line)
             continue
