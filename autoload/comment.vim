@@ -13,6 +13,9 @@ fu! comment#duplicate(type) abort "{{{1
         set cb-=unnamed cb-=unnamedplus
         set selection=inclusive
 
+        " TODO: prevent the function from doing anything if a line is already commented.
+        " For example, if you press by accident `+dd` twice on the same line, it
+        " shouldn't do anything the second time.
         if a:type is# 'vis'
             sil '<,'>yank
             '<,'>CommentToggle
