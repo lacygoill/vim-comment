@@ -5,6 +5,13 @@ let g:autoloaded_comment = 1
 
 let s:operate_on = 'text'
 
+fu! comment#and_paste(dir) abort "{{{1
+    exe 'norm ' . a:dir . 'p'
+    norm gc`]
+    " I don't like empty non-commented line in the middle of a multi-line comment.
+    sil keepj keepp '[,']g/^$/exe "norm! i\<c-v>\<c-a>" | exe 'norm gcc' | s/\s*\%x01//e
+endfu
+
 fu! comment#duplicate(type) abort "{{{1
     let cb_save = &cb
     let sel_save = &selection

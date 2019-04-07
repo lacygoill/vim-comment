@@ -30,6 +30,24 @@ let g:loaded_comment = 1
 com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
+" paste and comment {{{2
+
+" Paste and comment right afterwards.
+" Rationale:{{{
+"
+" We often have to press ``]pgc`]`` and it's hard/awkward to type.
+"}}}
+" Dependency:{{{
+"
+" This relies on the `[p` and `]p` mappings provided by `vim-brackets`.
+"}}}
+" How to select the text which I've just pasted with these mappings?{{{
+"
+" Press `g C-v` (custom mapping installed from our vimrc).
+"}}}
+nmap <silent> cp :<c-u>call comment#and_paste(']')<cr>
+nmap <silent> cP :<c-u>call comment#and_paste('[')<cr>
+
 " duplicate code {{{2
 
 "                                                    ┌─ we will always want to duplicate code (not text)
