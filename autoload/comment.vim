@@ -3,43 +3,73 @@ if exists('g:autoloaded_comment')
 endif
 let g:autoloaded_comment = 1
 
-let s:operate_on = 'text'
-
 fu! comment#and_paste(where, how_to_indent) abort "{{{1
     " Commenting in a markdown file is useless.
     " Formatting the text as output is much more useful.
     if &ft is# 'markdown'
-        " Why not using `:norm` ?{{{
+        exe 'norm! "' . v:register . a:where . 'p'
+        " Which alternatives could I use?{{{
         "
-        " Indeed, you could run:
-        "
-        "     exe "norm! '[V']\<c-v>0o$A~"
-        "
-        " But it would fail on a long line wrapped onto more than one screen line.
-        " That is, `~` would not be appended at  the very end of the line, but a
-        " few  characters before;  the more  screen lines,  the more  characters
-        " before the end.
-        "
-        " MWE:
-        "
-        "     $ echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-aaa\nb" | vim +'setl wrap' +'exe "norm! V+\<c-v>0o$A~"' -
+        "     let wrap_save = &l:wrap
+        "     try
+        "         setl nowrap
+        "         exe "norm! '[V']\<c-v>0o$A~"
+        "     finally
+        "         let &l:wrap = wrap_save
+        "     endtry
         "
         " ---
         "
-        " Note that you couldn't run `norm! '[V']A~`.
+        "     call setreg(v:register, join(map(getreg(v:register, 1, 1),
+        "         \ {i,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
+        "}}}
+        " Do *not* use this `norm! '[V']A~`!{{{
+        "
         " This sequence  of keys works in  an interactive usage, because  of our
         " custom mapping `x_A`, but it would fail with `:norm!` (note the bang).
-        " It would probably work with `:norm` though.
+        " It would  probably work with  `:norm` though, although it  would still
+        " fail on a long wrapped line (see next comment).
         "}}}
-        call setreg(v:register, join(map(getreg(v:register, 1, 1),
-            \ {i,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
-        exe 'norm! "' . v:register . a:where . 'p'
-        sil keepj keepp '[,']g/^\~$/d_
+        "     nor this `exe "norm! '[V']\<c-v>0o$A~"`!{{{
+        "
+        " This is better, because it doesn't rely on any custom mapping.
+        "
+        " But, it  would still fail  on a long line  wrapped onto more  than one
+        " screen line; that is, `~` would not be appended at the very end of the
+        " line, but  a few characters  before; the  more screen lines,  the more
+        " characters before the end.
+        "
+        " MWE:
+        "
+        "     $ vim +'put =repeat(\"a\", winwidth(0)-5).\"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
+        "
+        " The explanation of this behavior may be given at `:h v_b_A`.
+        " Anyway, with  a long  wrapped line,  it's possible  that the  block is
+        " defined in a weird way.
+        "}}}
+        sil keepj keepp '[,']g/^/norm! A~
+        sil keepj keepp '[,']g/^\~$/s/\~//
     else
+        " We may need later to know whether we were on a commented line initially.
+        let [l, r] = s:get_cml()
+        let is_commented = call('s:is_commented', [getline('.'), l, r])
+
+        " paste
         exe 'norm! "' . v:register . a:where . 'p'
-        norm gc']
-        " I don't like empty non-commented line in the middle of a multi-line comment.
+        " comment
+        .,']CommentToggle
+        " I don't like empty non-commented line in "the middle of a multi-line comment.
         sil keepj keepp '[,']g/^$/exe "norm! i\<c-v>\<c-a>" | exe 'norm gcc' | s/\s*\%x01//e
+
+        " If `>cp` is pressed on a commented line, increase the indentation of the text *after* the comment leader.{{{
+        "
+        " This allows us  to paste some code and highlight it  as a codeblock in
+        " one single mapping.
+        "}}}
+        if a:how_to_indent is# '>' && is_commented
+            exe "sil keepj keepp '[,']" . 's/^\s*\V' . escape(l, '\') . '\m\zs/    /e'
+            return
+        endif
     endif
     if a:how_to_indent isnot# ''
         exe 'norm! ' . a:how_to_indent . "']"
@@ -82,32 +112,29 @@ endfu
 fu! s:get_cml() abort "{{{1
     " This function should return a list of 2 strings:
     "
-    "     - the beginning of a comment string; e.g. for vim:    `" `
-    "     - the end of a comment string;       e.g. for html:   ` -->`
+    "    - the beginning of a comment string; e.g. for vim:    `" `
+    "    - the end of a comment string;       e.g. for html:   ` -->`
 
-    " if we operate on lines of code, make sure the comment leader ends with `@`
-    let cms = get(s:, 'operate_on', 'text') is# 'code'
-          \ ?     substitute(&l:cms, '\ze\s*%s', '@', '')
-          \ :     &l:cms
+    let cml = &l:cms
 
     " make sure there's a space between the comment leader and the comment:
     "         "%s   →   " %s
     " more readable
-    let cms = substitute(cms, '\S\zs\ze%s', ' ', '')
+    let cml = substitute(cml, '\S\zs\ze%s', ' ', '')
 
     " make sure there's a space between the comment and the end-comment leader
     "         <-- %s-->    →    <-- %s -->
-    let cms = substitute(cms,'%s\zs\ze\S', ' ', '')
+    let cml = substitute(cml,'%s\zs\ze\S', ' ', '')
 
     " return the comment leader, and the possible end-comment leader,
     " through a list of 2 items
-    return split(cms, '%s', 1)
+    return split(cml, '%s', 1)
     "                       │
-    "                       └─ always return 2 items, even if there's nothing
-    "                          after `%s` (in this case, the 2nd item will be '')
+    "                       └ always return 2 items, even if there's nothing
+    "                         after `%s` (in this case, the 2nd item will be '')
 endfu
 
-fu! s:get_search_pat(kind) abort "{{{1
+fu! s:get_search_pat() abort "{{{1
     " ['"']         in Vim
     " ['/*', '*/']  in C
     let cml = split(&l:cms, '%s')
@@ -120,69 +147,30 @@ fu! s:get_search_pat(kind) abort "{{{1
     " \V*/\v          in C
     let r = len(cml) ==# 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
 
-    if a:kind is# 'text'
-        " We're looking for a commented line of text.
-        " It must begin a fold.
-        " OR the line before must be:
-        "         - NOT commented
-        "         - a commented line of code
-        "
-        "                                 ┌──────────── NO commented line just before
-        "                                 │           ┌ a commented line of text
-        "              ┌──────────────────┤┌──────────┤
-        let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@@!'
-        let pat .= '|^%(^\s*'.l.'\@.*\n)@<=\s*'.l.'\@@!'
-        "            └────────────────────┤
-        "                                 └──────────── a commented line of code
-        "                                               just before a commented line of text
-        let pat .= '|^\s*'.l.'\@@!.*\{\{\{'
-
-    else
-        "                                   ┌────────── NO commented line just before
-        "                                   │         ┌ a commented line of code
-        "                ┌──────────────────┤┌────────┤
-        let pat  =    '\v^%(^\s*'.l.'.*\n)@<!\s*'.l.'\@'
-        let pat .= '|^%(^\s*'.l.'\@@!.*\n)@<=\s*'.l.'\@'
-        "            └──────────────────────┤
-        "                                   └ a commented line of text
-        "                                     just before a commented line of code
-        let pat .= '|^\s*'.l.'\@.*\{\{\{'
-    endif
+    " We're looking for a commented line of text.
+    " It must begin a fold.
+    " Or the line before must not be commented.
+    "
+    "              ┌ no commented line just before
+    "              │                   ┌ a commented line of text
+    "              ├──────────────────┐├────┐
+    let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l
+    let pat .= '|^\s*'.l.'.*\{\{\{'
     return pat
 endfu
 
 fu! s:is_commented(line, l, r) abort "{{{1
-    "                            ┌─ trim beginning whitespace
+    "                            ┌ trim beginning whitespace
     "                            │
     let line = matchstr(a:line, '\S.*\s\@1<!')
-    "                                └─────┤
-    "                                      └ trim ending whitespace
+    "                                ├─────┘
+    "                                └ trim ending whitespace
 
-    "                            ┌ the line begins with the comment leader
-    "      ┌─────────────────────┤
+    "      ┌ the line begins with the comment leader
+    "      ├─────────────────────┐
     return stridx(line, a:l) ==# 0 && line[strlen(line)-strlen(a:r):] is# a:r
     "                                 └─────────────────────────────────────┤
     "                              it also ends with the end-comment leader ┘
-endfu
-
-fu! s:is_commented_code(line) abort "{{{1
-    let line = matchstr(a:line, '\S.*\s\@1<!')
-
-    return   stridx(line, s:l.'@') ==# 0
-        &&   line[strlen(line)-strlen(s:r):] is# s:r
-endfu
-
-fu! s:is_commented_text(line) abort "{{{1
-    let line = matchstr(a:line, '\S.*\s\@1<!')
-
-    return   stridx(line, s:l) ==# 0
-       \ &&  stridx(line, s:l.'@') ==# -1
-       \ &&  line[strlen(line)-strlen(s:r):] is# s:r
-endfu
-
-fu! s:is_relevant(line) abort "{{{1
-    return  !(s:operate_on is# 'code' && s:is_commented_text(a:line))
-       \ && !(s:operate_on is# 'text' && s:is_commented_code(a:line))
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
@@ -233,7 +221,6 @@ fu! comment#object(op_is_c) abort "{{{1
     "                   boundaries[which] !=# limit
 "}}}
     let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
-        \     && s:is_relevant(next_line)
         \
         \     || next_line !~ '\S' && boundaries[which] !=# limit
         \ }
@@ -269,8 +256,8 @@ fu! comment#object(op_is_c) abort "{{{1
         return
     endif
 
-    "  ┌─ we operate on the object with `c`
-    "  │            ┌─ OR the object doesn't end at the very end of the buffer
+    "  ┌ we operate on the object with `c`
+    "  │            ┌ OR the object doesn't end at the very end of the buffer
     "  │            │
     if a:op_is_c || boundaries[1] !=# line('$')
         " make sure there's no empty lines at the BEGINNING of the object
@@ -300,9 +287,9 @@ fu! comment#object(op_is_c) abort "{{{1
     unlet! s:l s:r
 endfu
 
-fu! comment#search(kind, is_fwd, ...) abort "{{{1
-    " This function positions the cursor on the next/previous beginning
-    " of a comment (kind = 'text' or 'code').
+fu! comment#search(is_fwd, ...) abort "{{{1
+    " This function  positions the  cursor on the  next/previous beginning  of a
+    " comment.
 
     " Inspiration:
     " $VIMRUNTIME/ftplugin/vim.vim
@@ -318,7 +305,7 @@ fu! comment#search(kind, is_fwd, ...) abort "{{{1
         let seq .= "m'"
     endif
 
-    let pat = s:get_search_pat(a:kind)
+    let pat = s:get_search_pat()
 
     " Why `1|`?{{{
     "
@@ -377,11 +364,11 @@ fu! comment#toggle(type, ...) abort "{{{1
     endif
 
     " get original comment leader
-    " (no space added for better readability; no `@` for code)
+    " (no space added for better readability)
     let [s:l, s:r] = split(&l:cms, '%s', 1)
 
-    "    ┌─ comment leader (modified: add padding space, and `@` for code)
-    "    │   ┌─ end-comment leader ('' if there's none)
+    "    ┌ comment leader (modified: add padding space)
+    "    │   ┌ end-comment leader ('' if there's none)
     "    │   │
     let [l_, r_] = s:get_cml()
 
@@ -391,46 +378,22 @@ fu! comment#toggle(type, ...) abort "{{{1
     "         - 0 = the operator will comment    the range of lines
     "         - 2 = "                 uncomment  "
 
-    "               ┌─ Why 2 instead of 1?
-    "               │  Nested comments use numbers to denote the level of imbrication.
-    "               │  2 is a convenient value to compute an (in|de)cremented level:
+    "               ┌ Why 2 instead of 1?
+    "               │ Nested comments use numbers to denote the level of imbrication.
+    "               │ 2 is a convenient value to compute an (in|de)cremented level:
     "               │
     "               │             old_lvl - uncomment + 1
     "               │                       │
-    "               │                       └─ should be 2 or 0
+    "               │                       └ should be 2 or 0
     let uncomment = 2
     for lnum in range(lnum1, lnum2)
         let line = getline(lnum)
         " If needed for the current line, trim the comment leader.
         let [l, r] = s:maybe_trim_cml(line, l_, r_)
 
-        " To comment a range of lines, one of them must be:
-        "
-        "         - not empty
-        "         - not commented
-        "         - relevant
-        "
-        " What is an irrelevant line?
-        " A commented line of text, when we operate on code. (1)
-        " Or a commented line of code, when we operate on text. (2)
-        "
-        " (1) Such a line is indeed NOT commented (because no `@` in the cml).
-        " But if we operate on code, we don't care. So we need to ignore it.
-        "
-        " (2) Such a line should also be ignored, but is NOT a problem.
-        " Why? Because the previous condition has checked that the line is not
-        " commented. So:
-        "
-        "         we operate on text
-        "       + the line is not commented    ⇒    the line can't be
-        "                                           a commented line of code
-        "
-        " IOW: if you aren't a commented line of text, you can't be
-        " a commented line of code.
-
+        " To comment a range of lines, one of them must be non-empty or non-commented.
         if  line =~ '\S'
       \ && !s:is_commented(line, l, r)
-      \ &&  s:is_relevant(line)
             let uncomment = 0
         endif
     endfor
@@ -449,12 +412,8 @@ fu! comment#toggle(type, ...) abort "{{{1
     for lnum in range(lnum1,lnum2)
         let line = getline(lnum)
 
-        " Don't do anything if the line is:
-        "
-        "         - empty
-        "         - irrelevant
-
-        if  line !~ '\S' || !s:is_relevant(line)
+        " Don't do anything if the line is empty.
+        if  line !~ '\S'
             continue
         endif
 
@@ -467,18 +426,18 @@ fu! comment#toggle(type, ...) abort "{{{1
         "     <!-- <1!-- hello world --1> -->               comment in a comment
         "     <!-- <1!-- <2!-- hello world --2> --1> -->    comment in a comment in a comment
 
-        "            ┌─ the end-comment leader should have at least 2 characters:
-        "            │          -->
-        "            │  … otherwise the incrementation/decrementation could affect
-        "            │  numbers inside the comment text, which are not concerned:
-        "            │          r = 'x'
-        "            │          right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
-        "            │                       = '\zs\d\+\zex'
+        "            ┌ the end-comment leader should have at least 2 characters:
+        "            │         -->
+        "            │ … otherwise the incrementation/decrementation could affect
+        "            │ numbers inside the comment text, which are not concerned:
+        "            │         r = 'x'
+        "            │         right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
+        "            │                      = '\zs\d\+\zex'
         if strlen(r) >= 2 && l.r !~ '\\'
         "                            │
-        "                            └─ No matter the magicness of a pattern, a backslash
-        "                               has always a special meaning. So, we make sure
-        "                               that there's none in the comment leader.
+        "                            └ No matter the magicness of a pattern, a backslash
+        "                              has always a special meaning. So, we make sure
+        "                              that there's none in the comment leader.
 
             let left_number  = l[0].'\zs\d\*\ze'.l[1:]
             let right_number = r[:-2].'\zs\d\*\ze'.r[-1:-1]
@@ -523,14 +482,10 @@ fu! comment#toggle(type, ...) abort "{{{1
         " So we add the <nomodeline> argument to prevent the modelines in the
         " current buffer to be processed. From :h :do:
         "
-        "         You probably want to use <nomodeline> for events that are not
-        "         used when loading a buffer, such as |User|.
+        " > You probably want  to use <nomodeline> for events that  are not used
+        " > when loading a buffer, such as |User|.
     endif
 
-    " don't unlet `s:operate_on`:  it would break the dot command
     unlet! s:l s:r
 endfu
 
-fu! comment#what(this) abort "{{{1
-    let s:operate_on = a:this
-endfu

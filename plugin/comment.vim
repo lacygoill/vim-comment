@@ -19,15 +19,7 @@ let g:loaded_comment = 1
 " Alternatively, we could use `:norm gc{object}`, but in a script,
 " `:CommentToggle` is more readable.
 
-"                                   ┌─ We need to set `s:operate_on`, like we do for all normal commands
-"                                   │  (gc, gC, …). Otherwise, there's a risk that the plugin complains
-"                                   │  that the variable doesn't exist.
-"                                   │
-"                                   │  We choose to set `s:operate_on` to `text` instead of `code`.
-"                                   │  Because, I think we'll want to use the Ex command only for text.
-"                                   │  For code, the normal command is more well-suited.
-"                                   │
-com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('Ex', <line1>,<line2>)
+com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
 " paste and comment {{{2
@@ -55,43 +47,27 @@ nno <silent> =cP :<c-u>call comment#and_paste('[', '=')<cr>
 
 " duplicate code {{{2
 
-"                                                    ┌─ we will always want to duplicate code (not text)
-"                                                    │
-nno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate<cr>g@
-nno  <silent><unique>  +dd  :<c-u>call comment#what('code')<bar>set opfunc=comment#duplicate
+nno  <silent><unique>  +d   :<c-u>set opfunc=comment#duplicate<cr>g@
+nno  <silent><unique>  +dd  :<c-u>set opfunc=comment#duplicate
                            \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno  <silent><unique>  +d   :<c-u>call comment#what('code')<bar>call comment#duplicate('vis')<cr>
+xno  <silent><unique>  +d   :<c-u>call comment#duplicate('vis')<cr>
 
 " motion {{{2
 
-noremap  <expr><silent><unique>  ["  comment#search('text', 0)
-noremap  <expr><silent><unique>  ]"  comment#search('text', 1)
+noremap  <expr><silent><unique>  ["  comment#search(0)
+noremap  <expr><silent><unique>  ]"  comment#search(1)
 
-noremap  <expr><silent><unique>  [@  comment#search('code', 0)
-noremap  <expr><silent><unique>  ]@  comment#search('code', 1)
+" toggle {{{2
 
-" toggle code {{{2
-
-nno  <silent><unique>  gC   :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent><unique>  gC   :<c-u>call comment#what('code')<bar>call comment#toggle('visual')<cr>
-nno  <silent><unique>  gCC  :<c-u>call comment#what('code')<bar>set opfunc=comment#toggle
+nno  <silent><unique>  gc   :<c-u>set opfunc=comment#toggle<cr>g@
+xno  <silent><unique>  gc   :<c-u>call comment#toggle('visual')<cr>
+nno  <silent><unique>  gcc  :<c-u>set opfunc=comment#toggle
                            \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(v:operator is# 'c')<cr>
-xno  <silent><unique>  iC  :<c-u>call comment#what('code')<bar>call comment#object(0)<cr>
-
-nmap  <silent><unique>  gCu  gCiC
-
-" toggle text {{{2
-
-nno  <silent><unique>  gc   :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle<cr>g@
-xno  <silent><unique>  gc   :<c-u>call comment#what('text')<bar>call comment#toggle('visual')<cr>
-nno  <silent><unique>  gcc  :<c-u>call comment#what('text')<bar>set opfunc=comment#toggle
-                           \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
-
-ono  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(v:operator is# 'c')<cr>
-xno  <silent><unique>  ic  :<c-u>call comment#what('text')<bar>call comment#object(0)<cr>
+ono  <silent><unique>  ic  :<c-u>call comment#object(v:operator is# 'c')<cr>
+xno  <silent><unique>  ic  :<c-u>call comment#object(0)<cr>
 
 nmap  <silent><unique>  gcu  gcic
 "                         │
 "                         └─ Uncomment text-object
+
