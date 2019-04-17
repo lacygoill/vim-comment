@@ -5,11 +5,45 @@ let g:autoloaded_comment = 1
 
 let s:operate_on = 'text'
 
-fu! comment#and_paste(dir) abort "{{{1
-    exe 'norm ' . a:dir . 'p'
-    norm gc`]
-    " I don't like empty non-commented line in the middle of a multi-line comment.
-    sil keepj keepp '[,']g/^$/exe "norm! i\<c-v>\<c-a>" | exe 'norm gcc' | s/\s*\%x01//e
+fu! comment#and_paste(where, how_to_indent) abort "{{{1
+    " Commenting in a markdown file is useless.
+    " Formatting the text as output is much more useful.
+    if &ft is# 'markdown'
+        " Why not using `:norm` ?{{{
+        "
+        " Indeed, you could run:
+        "
+        "     exe "norm! '[V']\<c-v>0o$A~"
+        "
+        " But it would fail on a long line wrapped onto more than one screen line.
+        " That is, `~` would not be appended at  the very end of the line, but a
+        " few  characters before;  the more  screen lines,  the more  characters
+        " before the end.
+        "
+        " MWE:
+        "
+        "     $ echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-aaa\nb" | vim +'setl wrap' +'exe "norm! V+\<c-v>0o$A~"' -
+        "
+        " ---
+        "
+        " Note that you couldn't run `norm! '[V']A~`.
+        " This sequence  of keys works in  an interactive usage, because  of our
+        " custom mapping `x_A`, but it would fail with `:norm!` (note the bang).
+        " It would probably work with `:norm` though.
+        "}}}
+        call setreg(v:register, join(map(getreg(v:register, 1, 1),
+            \ {i,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
+        exe 'norm! "' . v:register . a:where . 'p'
+        sil keepj keepp '[,']g/^\~$/d_
+    else
+        exe 'norm! "' . v:register . a:where . 'p'
+        norm gc']
+        " I don't like empty non-commented line in the middle of a multi-line comment.
+        sil keepj keepp '[,']g/^$/exe "norm! i\<c-v>\<c-a>" | exe 'norm gcc' | s/\s*\%x01//e
+    endif
+    if a:how_to_indent isnot# ''
+        exe 'norm! ' . a:how_to_indent . "']"
+    endif
 endfu
 
 fu! comment#duplicate(type) abort "{{{1

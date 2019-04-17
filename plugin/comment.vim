@@ -37,16 +37,21 @@ com! -range -bar CommentToggle call comment#what('text') | call comment#toggle('
 "
 " We often have to press ``]pgc`]`` and it's hard/awkward to type.
 "}}}
-" Dependency:{{{
-"
-" This relies on the `[p` and `]p` mappings provided by `vim-brackets`.
-"}}}
 " How to select the text which I've just pasted with these mappings?{{{
 "
-" Press `g C-v` (custom mapping installed from our vimrc).
+" Press `gV` or `g C-v` (custom mappings installed from our vimrc).
 "}}}
-nmap <silent> cp :<c-u>call comment#and_paste(']')<cr>
-nmap <silent> cP :<c-u>call comment#and_paste('[')<cr>
+nno <silent> cp :<c-u>call comment#and_paste(']', '')<cr>
+nno <silent> cP :<c-u>call comment#and_paste('[', '')<cr>
+
+nno <silent> <cp :<c-u>call comment#and_paste(']', '<')<cr>
+nno <silent> <cP :<c-u>call comment#and_paste('[', '<')<cr>
+
+nno <silent> >cp :<c-u>call comment#and_paste(']', '>')<cr>
+nno <silent> >cP :<c-u>call comment#and_paste('[', '>')<cr>
+
+nno <silent> =cp :<c-u>call comment#and_paste(']', '=')<cr>
+nno <silent> =cP :<c-u>call comment#and_paste('[', '=')<cr>
 
 " duplicate code {{{2
 
