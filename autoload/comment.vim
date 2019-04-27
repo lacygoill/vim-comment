@@ -7,7 +7,7 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
     " Commenting in a markdown file is useless.
     " Formatting the text as output is much more useful.
     if &ft is# 'markdown'
-        exe 'norm! "' . v:register . a:where . 'p'
+        call s:paste(a:where)
         " Which alternatives could I use?{{{
         "
         "     let wrap_save = &l:wrap
@@ -54,8 +54,7 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         let [l, r] = s:get_cml()
         let is_commented = call('s:is_commented', [getline('.'), l, r])
 
-        " paste
-        exe 'norm! "' . v:register . a:where . 'p'
+        call s:paste(a:where)
         " comment
         .,']CommentToggle
         " I don't like empty non-commented line in "the middle of a multi-line comment.
@@ -285,6 +284,25 @@ fu! comment#object(op_is_c) abort "{{{1
     exe 'norm! V'.boundaries[1].'G'
 
     unlet! s:l s:r
+endfu
+
+fu! s:paste(where) abort "{{{1
+    " Do *not* put a bang after `:norm`!{{{
+    "
+    " We  need  to  prevent  `]p`  from  pasting  a  characterwise  text  as
+    " characterwise (we want linewise no matter what).
+    "}}}
+    " Why a special case when `v:register` is '"'?{{{
+    "
+    " We have a custom mapping which replaces `""` with `"+`.
+    " We use it because it's convenient in an interactive usage (easier to type).
+    " But we don't want it to interfere here (we're in a script now).
+    "}}}
+    if v:register is# '"'
+        exe 'norm ' . a:where . 'p'
+    else
+        exe 'norm "' . v:register . a:where . 'p'
+    endif
 endfu
 
 fu! comment#search(is_fwd, ...) abort "{{{1
