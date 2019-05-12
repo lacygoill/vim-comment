@@ -4,51 +4,57 @@ endif
 let g:autoloaded_comment = 1
 
 fu! comment#and_paste(where, how_to_indent) abort "{{{1
-    " Commenting in a markdown file is useless.
-    " Formatting the text as output is much more useful.
+    " In a markdown file, there're no comments.
+    " However, it could still be useful to format the text as code output or quote.
     if &ft is# 'markdown'
+        let is_quote = indent('.') == 0
         call s:paste(a:where)
-        " Which alternatives could I use?{{{
-        "
-        "     let wrap_save = &l:wrap
-        "     try
-        "         setl nowrap
-        "         exe "norm! '[V']\<c-v>0o$A~"
-        "     finally
-        "         let &l:wrap = wrap_save
-        "     endtry
-        "
-        " ---
-        "
-        "     call setreg(v:register, join(map(getreg(v:register, 1, 1),
-        "         \ {i,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
-        "}}}
-        " Do *not* use this `norm! '[V']A~`!{{{
-        "
-        " This sequence  of keys works in  an interactive usage, because  of our
-        " custom mapping `x_A`, but it would fail with `:norm!` (note the bang).
-        " It would  probably work with  `:norm` though, although it  would still
-        " fail on a long wrapped line (see next comment).
-        "}}}
-        "     nor this `exe "norm! '[V']\<c-v>0o$A~"`!{{{
-        "
-        " This is better, because it doesn't rely on any custom mapping.
-        "
-        " But, it  would still fail  on a long line  wrapped onto more  than one
-        " screen line; that is, `~` would not be appended at the very end of the
-        " line, but  a few characters  before; the  more screen lines,  the more
-        " characters before the end.
-        "
-        " MWE:
-        "
-        "     $ vim +'put =repeat(\"a\", winwidth(0)-5).\"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
-        "
-        " The explanation of this behavior may be given at `:h v_b_A`.
-        " Anyway, with  a long  wrapped line,  it's possible  that the  block is
-        " defined in a weird way.
-        "}}}
-        sil keepj keepp '[,']g/^/norm! A~
-        sil keepj keepp '[,']g/^\~$/s/\~//
+        if is_quote
+            sil keepj keepp '[,']g/^/exe 'norm! I> '
+        else
+            " Which alternatives could I use?{{{
+            "
+            "     let wrap_save = &l:wrap
+            "     try
+            "         setl nowrap
+            "         exe "norm! '[V']\<c-v>0o$A~"
+            "     finally
+            "         let &l:wrap = wrap_save
+            "     endtry
+            "
+            " ---
+            "
+            "     call setreg(v:register, join(map(getreg(v:register, 1, 1),
+            "         \ {i,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
+            "}}}
+            " Do *not* use this `norm! '[V']A~`!{{{
+            "
+            " This sequence  of keys works  in an interactive usage,  because of
+            " our custom  mapping `x_A`, but  it would fail with  `:norm!` (note
+            " the bang).
+            " It  would probably  work with  `:norm` though,  although it  would
+            " still fail on a long wrapped line (see next comment).
+            "}}}
+            "     nor this `exe "norm! '[V']\<c-v>0o$A~"`!{{{
+            "
+            " This is better, because it doesn't rely on any custom mapping.
+            "
+            " But, it would still fail on a long line wrapped onto more than one
+            " screen line; that is, `~` would not be appended at the very end of
+            " the line, but a few characters  before; the more screen lines, the
+            " more characters before the end.
+            "
+            " MWE:
+            "
+            "     $ vim +'put =repeat(\"a\", winwidth(0)-5).\"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
+            "
+            " The explanation of this behavior may be given at `:h v_b_A`.
+            " Anyway, with a long wrapped line,  it's possible that the block is
+            " defined in a weird way.
+            "}}}
+            sil keepj keepp '[,']g/^/norm! A~
+            sil keepj keepp '[,']g/^\~$/s/\~//
+        endif
     else
         " We may need later to know whether we were on a commented line initially.
         let [l, r] = s:get_cml()

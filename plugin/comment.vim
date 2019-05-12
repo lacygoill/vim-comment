@@ -69,5 +69,5 @@ xno  <silent><unique>  ic  :<c-u>call comment#object(0)<cr>
 
 nmap  <silent><unique>  gcu  gcic
 "                         │
-"                         └─ Uncomment text-object
+"                         └ Uncomment text-object
 
