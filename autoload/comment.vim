@@ -61,10 +61,13 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         let is_commented = call('s:is_commented', [getline('.'), l, r])
 
         call s:paste(a:where)
+        " some of the next commands may alter the change marks; save them now
+        let [start, end] = [line("'["), line("']")]
+        let range = start . ',' . end
         " comment
-        .,']CommentToggle
+        exe range . 'CommentToggle'
         " I don't like empty non-commented line in "the middle of a multi-line comment.
-        sil keepj keepp '[,']g/^$/exe "norm! i\<c-v>\<c-a>" | exe 'norm gcc' | s/\s*\%x01//e
+        sil exe 'keepj keepp ' . range . 'g/^$/exe "norm! i\<c-v>\<c-a>" | exe "norm gcc" | s/\s*\%x01//e'
 
         " If `>cp` is pressed on a commented line, increase the indentation of the text *after* the comment leader.{{{
         "
@@ -72,12 +75,12 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         " one single mapping.
         "}}}
         if a:how_to_indent is# '>' && is_commented
-            exe "sil keepj keepp '[,']" . 's/^\s*\V' . escape(l, '\') . '\m\zs/    /e'
+            sil exe 'keepj keepp ' . range . 's/^\s*\V' . escape(l, '\') . '\m\zs/    /e'
             return
         endif
     endif
     if a:how_to_indent isnot# ''
-        exe 'norm! ' . a:how_to_indent . "']"
+        exe 'norm! ' . start . 'G' . a:how_to_indent . end . 'G'
     endif
 endfu
 
