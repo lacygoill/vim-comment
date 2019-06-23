@@ -10,7 +10,7 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         let is_quote = indent('.') == 0
         call s:paste(a:where)
         if is_quote
-            sil keepj keepp '[,']g/^/exe 'norm! I> '
+            '[,']CommentToggle
         else
             " Which alternatives could I use?{{{
             "
