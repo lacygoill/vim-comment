@@ -9,6 +9,7 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
     if &ft is# 'markdown'
         let is_quote = indent('.') == 0
         call s:paste(a:where)
+        let [start, end] = [line("'["), line("']")]
         if is_quote
             '[,']CommentToggle
         else
@@ -207,26 +208,29 @@ fu! comment#object(op_is_c) abort "{{{1
 
     " We consider a line to be in a comment object iff it's:{{{
     "
-    "         - commented
-    "         - relevant
-    "         - not the start/end of a fold
-    " … OR:
-    "         - an empty line
+    "    - commented
+    "    - relevant
+    "    - not the start/end of a fold
     "
-    "           If the boundary has reached the end/beginning of the buffer,
-    "           there's no next line.
-    "           But `getline()` will still return an empty string.
-    "           So the test:
+    " ... OR:
     "
-    "                   next_line !~ '\S'
+    "    - an empty line
     "
-    "           … will succeed, wrongly.
-    "           We mustn't include this non-existent line.
-    "           Otherwise, we'll be stuck in an infinite loop,
-    "           forever (inc|dec)rementing the boundary and forever including
-    "           new non-existent lines.
-    "           Hence:
-    "                   boundaries[which] !=# limit
+    "      If the boundary has reached the end/beginning of the buffer,
+    "      there's no next line.
+    "      But `getline()` will still return an empty string.
+    "      So the test:
+    "
+    "         next_line !~ '\S'
+    "
+    "      ... will succeed, wrongly.
+    "      We mustn't include this non-existent line.
+    "      Otherwise, we'll be stuck in an infinite loop,
+    "      forever (inc|dec)rementing the boundary and forever including
+    "      new non-existent lines.
+    "      Hence:
+    "
+    "         boundaries[which] !=# limit
 "}}}
     let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
         \
