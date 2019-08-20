@@ -246,7 +246,7 @@ fu! comment#object(op_is_c) abort "{{{1
         let [l , r] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
-            if match(next_line, '{{{\|}}}') !=# -1
+            if match(next_line, '{{\%x7b\|}}\%x7d') !=# -1
                 break
             endif
 
