@@ -68,7 +68,11 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         " comment
         exe range . 'CommentToggle'
         " I don't like empty non-commented line in "the middle of a multi-line comment.
-        sil exe 'keepj keepp ' . range . 'g/^$/exe "norm! i\<c-v>\<c-a>" | exe "norm gcc" | s/\s*\%x01//e'
+        sil exe 'keepj keepp ' . range . 'g/^$/'
+            \ ..   'exe "norm! i\<c-v>\<c-a>"'
+            \ ..' | CommentToggle'
+            \ ..' | exe "norm! =="'
+            \ ..' | s/\s*\%x01//e'
 
         " If `>cp` is pressed on a commented line, increase the indentation of the text *after* the comment leader.{{{
         "
