@@ -64,12 +64,12 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         call s:paste(a:where)
         " some of the next commands may alter the change marks; save them now
         let [start, end] = [line("'["), line("']")]
-        let range = start . ',' . end
+        let range = start..','..end
         " comment
-        exe range . 'CommentToggle'
+        exe range..'CommentToggle'
         " I don't like empty non-commented line in "the middle of a multi-line comment.
-        sil exe 'keepj keepp ' . range . 'g/^$/'
-            \ ..   'exe "norm! i\<c-v>\<c-a>"'
+        sil exe 'keepj keepp '..range..'g/^$/'
+            \ ..'exe "norm! i\<c-v>\<c-a>"'
             \ ..' | CommentToggle'
             \ ..' | exe "norm! =="'
             \ ..' | s/\s*\%x01//e'
@@ -80,12 +80,12 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         " one single mapping.
         "}}}
         if a:how_to_indent is# '>' && is_commented
-            sil exe 'keepj keepp ' . range . 's/^\s*\V' . escape(l, '\') . '\m\zs/    /e'
+            sil exe 'keepj keepp '..range..'s/^\s*\V'..escape(l, '\')..'\m\zs/    /e'
             return
         endif
     endif
     if a:how_to_indent isnot# ''
-        exe 'norm! ' . start . 'G' . a:how_to_indent . end . 'G'
+        exe 'norm! '..start..'G'..a:how_to_indent..end..'G'
     endif
 endfu
 
@@ -105,12 +105,12 @@ fu! comment#duplicate(type) abort "{{{1
             '<,'>CommentToggle
             " add four spaces between comment  leader and beginning of the text,
             " so that if it's code, it's highlighted as a code block
-            sil exe "'<,'>s/^\\s*\\V".escape(matchstr(s:get_cml(), '\S*'), '\/').'\m\zs/    /'
+            sil exe "'<,'>s/^\\s*\\V"..escape(matchstr(s:get_cml(), '\S*'), '\/')..'\m\zs/    /'
             norm! `>]p
         else
             sil norm! '[y']
             '[,']CommentToggle
-            sil exe "'[,']s/^\\s*\\V".escape(matchstr(s:get_cml(), '\S*'), '\/').'\m\zs/    /'
+            sil exe "'[,']s/^\\s*\\V"..escape(matchstr(s:get_cml(), '\S*'), '\/')..'\m\zs/    /'
             norm! `]]p
         endif
     catch
@@ -154,21 +154,21 @@ fu! s:get_search_pat() abort "{{{1
 
     " \V"\v           in Vim
     " \V/*\v          in C
-    let l = '\V'.escape(matchstr(cml[0], '\S\+'), '\').'\v'
+    let l = '\V'..escape(matchstr(cml[0], '\S\+'), '\')..'\v'
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let r = len(cml) ==# 2 ? '\V'.escape(matchstr(cml[1], '\S\+'), '\').'\v' : l
+    let r = len(cml) ==# 2 ? '\V'..escape(matchstr(cml[1], '\S\+'), '\')..'\v' : l
 
     " We're looking for a commented line of text.
     " It must begin a fold.
     " Or the line before must not be commented.
     "
     "              ┌ no commented line just before
-    "              │                   ┌ a commented line of text
-    "              ├──────────────────┐├────┐
-    let pat  =  '\v^%(^\s*'.l.'.*\n)@<!\s*'.l
-    let pat .= '|^\s*'.l.'.*\{\{\{'
+    "              │                     ┌ a commented line of text
+    "              ├────────────────────┐├─────┐
+    let pat  =  '\v^%(^\s*'..l..'.*\n)@<!\s*'..l
+    let pat .= '|^\s*'..l..'.*\{\{\{'
     return pat
 endfu
 
@@ -295,10 +295,10 @@ fu! comment#object(op_is_c) abort "{{{1
     endif
 
     " position the cursor on the 1st line of the object
-    exe 'norm! '.boundaries[0].'G'
+    exe 'norm! '..boundaries[0]..'G'
 
     " select the object
-    exe 'norm! V'.boundaries[1].'G'
+    exe 'norm! V'..boundaries[1]..'G'
 
     unlet! s:l s:r
 endfu
@@ -316,7 +316,7 @@ fu! s:paste(where) abort "{{{1
     " But we don't want it to interfere here (we're in a script now).
     "}}}
     if v:register is# '"'
-        exe 'norm ' . a:where . 'p'
+        exe 'norm '..a:where..'p'
     else
         exe 'norm "' . v:register . a:where . 'p'
     endif
@@ -365,9 +365,9 @@ fu! comment#search(is_fwd, ...) abort "{{{1
            \ ?     '1|'
            \ :     ''
 
-    let new_address = search(pat, (a:is_fwd ? '' : 'b').'nW')
+    let new_address = search(pat, (a:is_fwd ? '' : 'b')..'nW')
     if new_address !=# 0
-        let seq .= new_address.'G'
+        let seq .= new_address..'G'
     else
         return ''
     endif
@@ -468,15 +468,15 @@ fu! comment#toggle(type, ...) abort "{{{1
         "            │         r = 'x'
         "            │         right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
         "            │                      = '\zs\d\+\zex'
-        if strlen(r) >= 2 && l.r !~ '\\'
-        "                            │
-        "                            └ No matter the magicness of a pattern, a backslash
-        "                              has always a special meaning. So, we make sure
-        "                              that there's none in the comment leader.
+        if strlen(r) >= 2 && l..r !~ '\\'
+        "                             │
+        "                             └ No matter the magicness of a pattern, a backslash
+        "                               has always a special meaning. So, we make sure
+        "                               that there's none in the comment leader.
 
-            let left_number  = l[0].'\zs\d\*\ze'.l[1:]
-            let right_number = r[:-2].'\zs\d\*\ze'.r[-1:-1]
-            let pat          = '\V'.left_number.'\|'.right_number
+            let left_number  = l[0]..'\zs\d\*\ze'..l[1:]
+            let right_number = r[:-2]..'\zs\d\*\ze'..r[-1:-1]
+            let pat          = '\V'..left_number..'\|'..right_number
             let l:Rep        = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
             let line         = substitute(line, pat, l:Rep, 'g')
         endif
@@ -485,8 +485,41 @@ fu! comment#toggle(type, ...) abort "{{{1
             let pat   = '\S.*\s\@1<!'
             let l:Rep = {m -> m[0][strlen(l) : -1 - strlen(r)]}
         else
-            let pat   = '\v^%('.indent.'|\s*)\zs.*'
-            let l:Rep = {m -> l.m[0].r}
+            let pat   = '\v^%('..indent..'|\s*)\zs.*'
+            " Why?{{{
+            "
+            " Without,  a comment  leader may  be misaligned  if it  comments an
+            " empty commented line.
+            "
+            " ---
+            "
+            " Select these lines:
+            "
+            "     echo ''
+            "         " foo
+            "         "
+            "         " bar
+            "
+            " Comment them by pressing `gc`.
+            "
+            " Result:
+            "
+            "     " echo ''
+            "     "      " foo
+            "     "     "
+            "     "      " bar
+            "
+            " Notice  how the  comment leader  on the  third line  is misaligned
+            " compared to the other ones.
+            " We want this instead:
+            "
+            "     " echo ''
+            "     "      " foo
+            "     "      "
+            "     "      " bar
+            "}}}
+            if line =~# '^\s*'..l..'$' | let l .= ' ' | endif
+            let l:Rep = {m -> l..m[0]..r}
         endif
 
         let line = substitute(line, pat, l:Rep, '')
@@ -499,10 +532,10 @@ fu! comment#toggle(type, ...) abort "{{{1
     " installing an autocmd outside this function, using the same event and
     " filter. Example:
     "
-    "         augroup my_comment_toggle
-    "             au!
-    "             au User CommentTogglePost `do some stuff`
-    "         augroup END
+    "     augroup my_comment_toggle
+    "         au!
+    "         au User CommentTogglePost `do some stuff`
+    "     augroup END
 
     if exists('#User#CommentTogglePost')
         doautocmd <nomodeline> User CommentTogglePost
