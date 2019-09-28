@@ -15,12 +15,15 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
         else
             " Which alternatives could I use?{{{
             "
-            "     let wrap_save = &l:wrap
+            "     let [wrap_save, winid, bufnr] = [&l:wrap, win_getid(), bufnr('%')]
             "     try
             "         setl nowrap
             "         exe "norm! '[V']\<c-v>0o$A~"
             "     finally
-            "         let &l:wrap = wrap_save
+            "         if winbufnr(winid) == bufnr
+            "             let [tabnr, winnr] = win_id2tabwin(winid)
+            "             call settabwinvar(tabnr, winnr, '&wrap', wrap_save)
+            "         endif
             "     endtry
             "
             " ---
@@ -346,9 +349,9 @@ fu! comment#search(is_fwd, ...) abort "{{{1
     "
     " Necessary when:
     "
-    "       - we look for a pattern, like the previous beginning of a comment section
-    "       - the current line matches
-    "       - we want to ignore this match
+    "    - we look for a pattern, like the previous beginning of a comment section
+    "    - the current line matches
+    "    - we want to ignore this match
     "
     " `norm! 1|` + no `c` flag in search() = no match  ✔
     "}}}
@@ -410,8 +413,8 @@ fu! comment#toggle(type, ...) abort "{{{1
     " Decide what to do:   comment or uncomment?
     " The decision will be stored in the variable `uncomment`:
     "
-    "         - 0 = the operator will comment    the range of lines
-    "         - 2 = "                 uncomment  "
+    "    - 0 = the operator will comment    the range of lines
+    "    - 2 = "                 uncomment  "
 
     "               ┌ Why 2 instead of 1?
     "               │ Nested comments use numbers to denote the level of imbrication.
