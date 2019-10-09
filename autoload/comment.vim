@@ -161,7 +161,7 @@ fu! s:get_search_pat() abort "{{{1
 
     " \V"\v           in Vim
     " \V*/\v          in C
-    let r = len(cml) ==# 2 ? '\V'..escape(matchstr(cml[1], '\S\+'), '\')..'\v' : l
+    let r = len(cml) == 2 ? '\V'..escape(matchstr(cml[1], '\S\+'), '\')..'\v' : l
 
     " We're looking for a commented line of text.
     " It must begin a fold.
@@ -171,7 +171,7 @@ fu! s:get_search_pat() abort "{{{1
     "              │                     ┌ a commented line of text
     "              ├────────────────────┐├─────┐
     let pat  =  '\v^%(^\s*'..l..'.*\n)@<!\s*'..l
-    let pat .= '|^\s*'..l..'.*\{\{\{'
+    let pat ..= '|^\s*'..l..'.*\{\{\{'
     return pat
 endfu
 
@@ -183,10 +183,10 @@ fu! s:is_commented(line, l, r) abort "{{{1
     "                                └ trim ending whitespace
 
     "      ┌ the line begins with the comment leader
-    "      ├─────────────────────┐
-    return stridx(line, a:l) ==# 0 && line[strlen(line)-strlen(a:r):] is# a:r
-    "                                 └─────────────────────────────────────┤
-    "                              it also ends with the end-comment leader ┘
+    "      ├────────────────────┐
+    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] is# a:r
+    "                                └─────────────────────────────────────┤
+    "                             it also ends with the end-comment leader ┘
 endfu
 
 fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
@@ -237,11 +237,11 @@ fu! comment#object(op_is_c) abort "{{{1
     "      new non-existent lines.
     "      Hence:
     "
-    "         boundaries[which] !=# limit
+    "         boundaries[which] != limit
 "}}}
     let l:Next_line_is_in_object = { ->    s:is_commented(next_line, l, r)
         \
-        \     || next_line !~ '\S' && boundaries[which] !=# limit
+        \     || next_line !~ '\S' && boundaries[which] != limit
         \ }
 
     "       ┌ 0 or 1:  upper or lower boundary
@@ -253,7 +253,7 @@ fu! comment#object(op_is_c) abort "{{{1
         let [l , r] = s:maybe_trim_cml(getline('.'), l_, r_)
         while l:Next_line_is_in_object()
             " stop if the boundary has reached the beginning/end of a fold
-            if match(next_line, '{{\%x7b\|}}\%x7d') !=# -1
+            if match(next_line, '{{\%x7b\|}}\%x7d') != -1
                 break
             endif
 
@@ -278,7 +278,7 @@ fu! comment#object(op_is_c) abort "{{{1
     "  ┌ we operate on the object with `c`
     "  │            ┌ OR the object doesn't end at the very end of the buffer
     "  │            │
-    if a:op_is_c || boundaries[1] !=# line('$')
+    if a:op_is_c || boundaries[1] != line('$')
         " make sure there's no empty lines at the BEGINNING of the object
         " by incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
@@ -340,7 +340,7 @@ fu! comment#search(is_fwd, ...) abort "{{{1
 
     let seq = ''
     if mode is# 'n'
-        let seq .= "m'"
+        let seq ..= "m'"
     endif
 
     let pat = s:get_search_pat()
@@ -364,23 +364,23 @@ fu! comment#search(is_fwd, ...) abort "{{{1
     " For Vim, `1|` will be the object, and `123G` just a simple motion.
     " That's not what we want.
     "}}}
-    let seq .= index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
+    let seq ..= index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
            \ ?     '1|'
            \ :     ''
 
     let new_address = search(pat, (a:is_fwd ? '' : 'b')..'nW')
-    if new_address !=# 0
-        let seq .= new_address..'G'
+    if new_address != 0
+        let seq ..= new_address..'G'
     else
         return ''
     endif
 
     if mode is# 'n'
-        let seq .= 'zMzv'
+        let seq ..= 'zMzv'
     elseif index(['v', 'V', "\<c-v>"], mode) >= 0
         " don't close fold in visual mode,
         " it makes Vim select whole folds instead of some part of them
-        let seq .= 'zv'
+        let seq ..= 'zv'
     endif
 
     return seq
@@ -521,7 +521,7 @@ fu! comment#toggle(type, ...) abort "{{{1
             "     "      "
             "     "      " bar
             "}}}
-            if line =~# '^\s*'..l..'$' | let l .= ' ' | endif
+            if line =~# '^\s*'..l..'$' | let l ..= ' ' | endif
             let l:Rep = {m -> l..m[0]..r}
         endif
 
@@ -543,7 +543,7 @@ fu! comment#toggle(type, ...) abort "{{{1
     if exists('#User#CommentTogglePost')
         doautocmd <nomodeline> User CommentTogglePost
         " By default, when an autocmd is executed, the modelines in the current
-        " buffer are processed (if &modelines !=# 0).
+        " buffer are processed (if `&modelines != 0`).
         " Indeed, the modelines must be able to overrule the settings changed by
         " autocmds. For example, when we edit a file, the settings set by
         " modelines must be able to overrule the ones set by the autocmds
