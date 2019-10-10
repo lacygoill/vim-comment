@@ -62,6 +62,13 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
     else
         " We may need later to know whether we were on a commented line initially.
         let [l, r] = s:get_cml()
+        " Useful in case we paste with `>cp` while the cursor is on an empty commented line.{{{
+        "
+        " Otherwise, the  added indentation  is positioned *before*  the comment
+        " leader, instead of  *between* the comment leader and  the beginning of
+        " the text.
+        "}}}
+        let l = matchstr(l, '\S*')
         let is_commented = call('s:is_commented', [getline('.'), l, r])
 
         call s:paste(a:where)
