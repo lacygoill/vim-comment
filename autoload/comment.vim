@@ -3,7 +3,7 @@ if exists('g:autoloaded_comment')
 endif
 let g:autoloaded_comment = 1
 
-fu! comment#and_paste(where, how_to_indent) abort "{{{1
+fu comment#and_paste(where, how_to_indent) abort "{{{1
     " In a markdown file, there're no comments.
     " However, it could still be useful to format the text as code output or quote.
     if &ft is# 'markdown'
@@ -99,7 +99,7 @@ fu! comment#and_paste(where, how_to_indent) abort "{{{1
     endif
 endfu
 
-fu! comment#duplicate(type) abort "{{{1
+fu comment#duplicate(type) abort "{{{1
     let cb_save = &cb
     let sel_save = &selection
     let reg_save = ['"', getreg('"'), getregtype('"')]
@@ -132,7 +132,7 @@ fu! comment#duplicate(type) abort "{{{1
     endtry
 endfu
 
-fu! s:get_cml() abort "{{{1
+fu s:get_cml() abort "{{{1
     " This function should return a list of 2 strings:
     "
     "    - the beginning of a comment string; e.g. for vim:    `" `
@@ -157,7 +157,7 @@ fu! s:get_cml() abort "{{{1
     "                         after `%s` (in this case, the 2nd item will be '')
 endfu
 
-fu! s:get_search_pat() abort "{{{1
+fu s:get_search_pat() abort "{{{1
     " ['"']         in Vim
     " ['/*', '*/']  in C
     let cml = split(&l:cms, '%s')
@@ -182,7 +182,7 @@ fu! s:get_search_pat() abort "{{{1
     return pat
 endfu
 
-fu! s:is_commented(line, l, r) abort "{{{1
+fu s:is_commented(line, l, r) abort "{{{1
     "                            ┌ trim beginning whitespace
     "                            │
     let line = matchstr(a:line, '\S.*\s\@1<!')
@@ -196,7 +196,7 @@ fu! s:is_commented(line, l, r) abort "{{{1
     "                             it also ends with the end-comment leader ┘
 endfu
 
-fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
+fu s:maybe_trim_cml(line, l_, r_) abort "{{{1
     let [l_, r_] = [a:l_    , a:r_]
     let [l, r]   = [l_[0:-2], r_[1:]]
     "                 ├────┘    ├──┘{{{
@@ -215,7 +215,7 @@ fu! s:maybe_trim_cml(line, l_, r_) abort "{{{1
     return [l_, r_]
 endfu
 
-fu! comment#object(op_is_c) abort "{{{1
+fu comment#object(op_is_c) abort "{{{1
     let [s:l, s:r] = split(&l:cms, '%s', 1)
     let [l_, r_]   = s:get_cml()
     let boundaries = [line('.')+1, line('.')-1]
@@ -313,7 +313,7 @@ fu! comment#object(op_is_c) abort "{{{1
     unlet! s:l s:r
 endfu
 
-fu! s:paste(where) abort "{{{1
+fu s:paste(where) abort "{{{1
     " Do *not* put a bang after `:norm`!{{{
     "
     " We  need  to  prevent  `]p`  from  pasting  a  characterwise  text  as
@@ -332,7 +332,7 @@ fu! s:paste(where) abort "{{{1
     endif
 endfu
 
-fu! comment#search(is_fwd, ...) abort "{{{1
+fu comment#search(is_fwd, ...) abort "{{{1
     " This function  positions the  cursor on the  next/previous beginning  of a
     " comment.
 
@@ -393,7 +393,7 @@ fu! comment#search(is_fwd, ...) abort "{{{1
     return seq
 endfu
 
-fu! comment#toggle(type, ...) abort "{{{1
+fu comment#toggle(type, ...) abort "{{{1
     if empty(&l:cms)
         return
     endif

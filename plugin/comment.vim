@@ -19,7 +19,7 @@ let g:loaded_comment = 1
 " Alternatively, we could use `:norm gc{object}`, but in a script,
 " `:CommentToggle` is more readable.
 
-com! -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
+com -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 
 " Mappings {{{1
 " paste and comment {{{2
