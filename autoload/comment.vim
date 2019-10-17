@@ -375,7 +375,7 @@ fu comment#search(is_fwd, ...) abort "{{{1
            \ ?     '1|'
            \ :     ''
 
-    let new_address = search(pat, (a:is_fwd ? '' : 'b')..'nW')
+    let new_address = search(pat, (a:is_fwd ? '' : 'b')..'n')
     if new_address != 0
         let seq ..= new_address..'G'
     else

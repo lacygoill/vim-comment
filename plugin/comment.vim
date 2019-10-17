@@ -47,27 +47,27 @@ nno <silent> =cP :<c-u>call comment#and_paste('[', '=')<cr>
 
 " duplicate code {{{2
 
-nno  <silent><unique>  +d   :<c-u>set opfunc=comment#duplicate<cr>g@
-nno  <silent><unique>  +dd  :<c-u>set opfunc=comment#duplicate
-                           \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno  <silent><unique>  +d   :<c-u>call comment#duplicate('vis')<cr>
+nno <silent><unique> +d  :<c-u>set opfunc=comment#duplicate<cr>g@
+nno <silent><unique> +dd :<c-u>set opfunc=comment#duplicate
+                         \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
+xno <silent><unique> +d  :<c-u>call comment#duplicate('vis')<cr>
 
 " motion {{{2
 
-noremap  <expr><silent><unique>  ["  comment#search(0)
-noremap  <expr><silent><unique>  ]"  comment#search(1)
+noremap <expr><silent><unique> [" comment#search(0)
+noremap <expr><silent><unique> ]" comment#search(1)
 
 " toggle {{{2
 
-nno  <silent><unique>  gc   :<c-u>set opfunc=comment#toggle<cr>g@
-xno  <silent><unique>  gc   :<c-u>call comment#toggle('visual')<cr>
-nno  <silent><unique>  gcc  :<c-u>set opfunc=comment#toggle
-                           \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
+nno <silent><unique> gc  :<c-u>set opfunc=comment#toggle<cr>g@
+xno <silent><unique> gc  :<c-u>call comment#toggle('visual')<cr>
+nno <silent><unique> gcc :<c-u>set opfunc=comment#toggle
+                         \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
 
-ono  <silent><unique>  ic  :<c-u>call comment#object(v:operator is# 'c')<cr>
-xno  <silent><unique>  ic  :<c-u>call comment#object(0)<cr>
+ono <silent><unique> ic :<c-u>call comment#object(v:operator is# 'c')<cr>
+xno <silent><unique> ic :<c-u>call comment#object(0)<cr>
 
-nmap  <silent><unique>  gcu  gcic
-"                         │
-"                         └ Uncomment text-object
+nmap <silent><unique> gcu gcic
+"                       │
+"                       └ Uncomment text-object
 
