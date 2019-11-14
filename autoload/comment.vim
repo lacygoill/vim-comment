@@ -90,7 +90,10 @@ fu comment#and_paste(where, how_to_indent) abort "{{{1
         " one single mapping.
         "}}}
         if a:how_to_indent is# '>' && is_commented
-            sil exe 'keepj keepp '..range..'s/^\s*\V'..escape(l, '\')..'\m\zs/    /e'
+            sil exe 'keepj keepp '..range..'s/^\s*\V'..escape(l, '\')..'\m\zs\%(.*\S\)\@=/    /e'
+            "                                                                ├──────────┘
+            "                                                                └ don't add trailing whitespace
+            "                                                                  on an empty commented line
             return
         endif
     endif
