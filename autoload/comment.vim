@@ -60,16 +60,8 @@ fu comment#and_paste(where, how_to_indent) abort "{{{1
             sil keepj keepp '[,']g/^\~$/s/\~//
         endif
     else
-        " We may need later to know whether we were on a commented line initially.
         let [l, r] = s:get_cml()
-        " Useful in case we paste with `>cp` while the cursor is on an empty commented line.{{{
-        "
-        " Otherwise, the  added indentation  is positioned *before*  the comment
-        " leader, instead of  *between* the comment leader and  the beginning of
-        " the text.
-        "}}}
         let l = matchstr(l, '\S*')
-        let is_commented = call('s:is_commented', [getline('.'), l, r])
 
         call s:paste(a:where)
         " some of the next commands may alter the change marks; save them now
@@ -84,12 +76,12 @@ fu comment#and_paste(where, how_to_indent) abort "{{{1
             \ ..' | exe "norm! =="'
             \ ..' | s/\s*\%x01//e'
 
-        " If `>cp` is pressed on a commented line, increase the indentation of the text *after* the comment leader.{{{
+        " If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         "
         " This allows us  to paste some code and highlight it  as a codeblock in
         " one single mapping.
         "}}}
-        if a:how_to_indent is# '>' && is_commented
+        if a:how_to_indent is# '>'
             sil exe 'keepj keepp '..range..'s/^\s*\V'..escape(l, '\')..'\m\zs\%(.*\S\)\@=/    /e'
             "                                                                ├──────────┘
             "                                                                └ don't add trailing whitespace
@@ -223,36 +215,6 @@ fu comment#object(op_is_c) abort "{{{1
     let [l_, r_]   = s:get_cml()
     let boundaries = [line('.')+1, line('.')-1]
 
-    " We consider a line to be in a comment object iff it's:{{{
-    "
-    "    - commented
-    "    - relevant
-    "    - not the start/end of a fold
-    "
-    " ... OR:
-    "
-    "    - an empty line
-    "
-    "      If the boundary has reached the end/beginning of the buffer,
-    "      there's no next line.
-    "      But `getline()` will still return an empty string.
-    "      So the test:
-    "
-    "         next_line !~ '\S'
-    "
-    "      ... will succeed, wrongly.
-    "      We mustn't include this non-existent line.
-    "      Otherwise, we'll be stuck in an infinite loop,
-    "      forever (inc|dec)rementing the boundary and forever including
-    "      new non-existent lines.
-    "      Hence:
-    "
-    "         boundaries[which] != limit
-"}}}
-    let l:Next_line_is_in_object = {-> s:is_commented(next_line, l, r)
-        \ || next_line !~ '\S' && boundaries[which] != limit
-        \ }
-
     "       ┌ 0 or 1:  upper or lower boundary
     "       │
     for  [which,   dir,       limit,      next_line]
@@ -260,7 +222,7 @@ fu comment#object(op_is_c) abort "{{{1
   \ ,    [    1,     1,   line('$'),   getline('.')]]
 
         let [l , r] = s:maybe_trim_cml(getline('.'), l_, r_)
-        while l:Next_line_is_in_object()
+        while s:is_commented(next_line, l, r)
             " stop if the boundary has reached the beginning/end of a fold
             let fmr = join(split(&l:fmr, ','), '\|')
             if match(next_line, fmr) != -1 | break | endif
@@ -275,20 +237,18 @@ fu comment#object(op_is_c) abort "{{{1
     endfor
 
     let l:Invalid_boundaries = {->
-    \    boundaries[0] < 1
-    \ || boundaries[1] > line('$')
-    \ || boundaries[0] > boundaries[1]
-    \ }
+        \    boundaries[0] < 1
+        \ || boundaries[1] > line('$')
+        \ || boundaries[0] > boundaries[1]
+        \ }
 
-    if l:Invalid_boundaries()
-        return
-    endif
+    if l:Invalid_boundaries() | return | endif
 
     "  ┌ we operate on the object with `c`
     "  │            ┌ OR the object doesn't end at the very end of the buffer
     "  │            │
     if a:op_is_c || boundaries[1] != line('$')
-        " make sure there's no empty lines at the BEGINNING of the object
+        " make sure there's no empty lines at the *start* of the object
         " by incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
             let boundaries[0] += 1
@@ -296,15 +256,13 @@ fu comment#object(op_is_c) abort "{{{1
     endif
 
     if a:op_is_c
-        " make sure there's no empty lines at the END of the object
+        " make sure there are no empty lines at the *end* of the object
         while getline(boundaries[1]) !~ '\S'
             let boundaries[1] -= 1
         endwhile
     endif
 
-    if l:Invalid_boundaries()
-        return
-    endif
+    if l:Invalid_boundaries() | return | endif
 
     " position the cursor on the 1st line of the object
     exe 'norm! '..boundaries[0]..'G'
@@ -560,7 +518,7 @@ fu comment#toggle(type, ...) abort "{{{1
         "
         " But here, we probably don't want the modelines to change anything.
         " So we add the <nomodeline> argument to prevent the modelines in the
-        " current buffer to be processed. From :h :do:
+        " current buffer to be processed. From `:h :do`:
         "
         " > You probably want  to use <nomodeline> for events that  are not used
         " > when loading a buffer, such as |User|.
