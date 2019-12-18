@@ -508,20 +508,7 @@ fu comment#toggle(type, ...) abort "{{{1
     "     augroup END
 
     if exists('#User#CommentTogglePost')
-        doautocmd <nomodeline> User CommentTogglePost
-        " By default, when an autocmd is executed, the modelines in the current
-        " buffer are processed (if `&modelines != 0`).
-        " Indeed, the modelines must be able to overrule the settings changed by
-        " autocmds. For example, when we edit a file, the settings set by
-        " modelines must be able to overrule the ones set by the autocmds
-        " watching the BufRead event.
-        "
-        " But here, we probably don't want the modelines to change anything.
-        " So we add the <nomodeline> argument to prevent the modelines in the
-        " current buffer to be processed. From `:h :do`:
-        "
-        " > You probably want  to use <nomodeline> for events that  are not used
-        " > when loading a buffer, such as |User|.
+        do <nomodeline> User CommentTogglePost
     endif
 
     unlet! s:l s:r
