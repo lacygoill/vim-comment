@@ -153,27 +153,27 @@ fu s:get_cml() abort "{{{1
 endfu
 
 fu s:get_search_pat() abort "{{{1
-    " ['"']         in Vim
-    " ['/*', '*/']  in C
+    " `['"']` in Vim
+    " `['/*', '*/']` in C
     let cml = split(&l:cms, '%s')
 
-    " \V"\v           in Vim
-    " \V/*\v          in C
-    let l = '\V'..escape(matchstr(cml[0], '\S\+'), '\')..'\v'
+    " `\V"\m` in Vim
+    " `\V/*\m` in C
+    let l = '\V'..escape(matchstr(cml[0], '\S\+'), '\')..'\m'
 
-    " \V"\v           in Vim
-    " \V*/\v          in C
-    let r = len(cml) == 2 ? '\V'..escape(matchstr(cml[1], '\S\+'), '\')..'\v' : l
+    " `\V"\m` in Vim
+    " `\V*/\m` in C
+    let r = len(cml) == 2 ? '\V'..escape(matchstr(cml[1], '\S\+'), '\')..'\m' : l
 
     " We're looking for a commented line of text.
     " It must begin a fold.
     " Or the line before must not be commented.
     "
-    "              ┌ no commented line just before
-    "              │                     ┌ a commented line of text
-    "              ├────────────────────┐├─────┐
-    let pat  =  '\v^%(^\s*'..l..'.*\n)@<!\s*'..l
-    let pat ..= '|^\s*'..l..'.*\{\{\{'
+    "            ┌ no commented line just before
+    "            │                        ┌ a commented line of text
+    "            ├───────────────────────┐├─────┐
+    let pat  =  '^\%(^\s*'..l..'.*\n\)\@<!\s*'..l
+    let pat ..= '\|^\s*'..l..'.*{{'..'{'
     return pat
 endfu
 
@@ -444,18 +444,18 @@ fu comment#toggle(type, ...) abort "{{{1
         "                               has always a special meaning. So, we make sure
         "                               that there's none in the comment leader.
 
-            let left_number  = l[0]..'\zs\d\*\ze'..l[1:]
+            let left_number = l[0]..'\zs\d\*\ze'..l[1:]
             let right_number = r[:-2]..'\zs\d\*\ze'..r[-1:-1]
-            let pat          = '\V'..left_number..'\|'..right_number
-            let l:Rep        = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
-            let line         = substitute(line, pat, l:Rep, 'g')
+            let pat = '\V'..left_number..'\|'..right_number
+            let l:Rep = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
+            let line = substitute(line, pat, l:Rep, 'g')
         endif
 
         if uncomment
-            let pat   = '\S.*\s\@1<!'
+            let pat = '\S.*\s\@1<!'
             let l:Rep = {m -> m[0][strlen(l) : -1 - strlen(r)]}
         else
-            let pat   = '\v^%('..indent..'|\s*)\zs.*'
+            let pat = '^\%('..indent..'\|\s*\)\zs.*'
             " Why?{{{
             "
             " Without,  a comment  leader may  be misaligned  if it  comments an
