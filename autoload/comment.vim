@@ -293,22 +293,15 @@ fu s:paste(where) abort "{{{1
 endfu
 
 fu comment#search(is_fwd, ...) abort "{{{1
-    " This function  positions the  cursor on the  next/previous beginning  of a
-    " comment.
+    " This function positions the cursor on the next/previous beginning of a comment.
+    " Inspiration: $VIMRUNTIME/ftplugin/vim.vim
 
-    " Inspiration:
-    " $VIMRUNTIME/ftplugin/vim.vim
-
-    if empty(&l:cms)
-        return ''
-    endif
+    if empty(&l:cms) | return '' | endif
 
     let mode = mode(1)
 
     let seq = ''
-    if mode is# 'n'
-        let seq ..= "m'"
-    endif
+    if mode is# 'n' | let seq ..= "m'" | endif
 
     let pat = s:get_search_pat()
 
@@ -354,12 +347,9 @@ fu comment#search(is_fwd, ...) abort "{{{1
 endfu
 
 fu comment#toggle(type, ...) abort "{{{1
-    if empty(&l:cms)
-        return
-    endif
+    if empty(&l:cms) | return | endif
 
     " Define the range of lines to (un)comment.
-
     if a:type is# 'Ex'
         let [lnum1, lnum2] = [a:1, a:2]
     elseif a:type is# 'visual'
