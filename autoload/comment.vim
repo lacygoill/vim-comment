@@ -274,22 +274,19 @@ fu comment#object(op_is_c) abort "{{{1
 endfu
 
 fu s:paste(where) abort "{{{1
-    " Do *not* put a bang after `:norm`!{{{
-    "
-    " We  need  to  prevent  `]p`  from  pasting  a  characterwise  text  as
-    " characterwise (we want linewise no matter what).
-    "}}}
-    " Why a special case when `v:register` is '"'?{{{
+    " Do *not* remove the bang.{{{
     "
     " We have a custom mapping which replaces `""` with `"+`.
     " We use it because it's convenient in an interactive usage (easier to type).
     " But we don't want it to interfere here (we're in a script now).
     "}}}
-    if v:register is# '"'
-        exe 'norm '..a:where..'p'
-    else
-        exe 'norm "' . v:register . a:where . 'p'
-    endif
+    exe 'norm! "'..v:register
+    " Do *not* add a bang.{{{
+    "
+    " We need our custom `]p` to be pressed so that the the text is pasted as if
+    " it was linewise, even if in reality it's characterwise.
+    "}}}
+    exe 'norm '..a:where..'p'
 endfu
 
 fu comment#search(is_fwd, ...) abort "{{{1
