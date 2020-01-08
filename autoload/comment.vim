@@ -321,7 +321,7 @@ fu comment#search(is_fwd, ...) abort "{{{1
     " For Vim, `1|` will be the object, and `123G` just a simple motion.
     " That's not what we want.
     "}}}
-    let seq ..= index(['n', 'v', 'V', "\<c-v>"], mode) >= 0
+    let seq ..= mode =~# "[nvV\<c-v>]"
            \ ?     '1|'
            \ :     ''
 
@@ -334,7 +334,7 @@ fu comment#search(is_fwd, ...) abort "{{{1
 
     if mode is# 'n'
         let seq ..= 'zMzv'
-    elseif index(['v', 'V', "\<c-v>"], mode) >= 0
+    elseif mode =~# "[vV\<c-v>]"
         " don't close fold in visual mode,
         " it makes Vim select whole folds instead of some part of them
         let seq ..= 'zv'
