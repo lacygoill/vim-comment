@@ -5,23 +5,23 @@ let g:loaded_comment = 1
 
 " Commands {{{1
 
-" This command could be useful when we're working from the command-line
-" (script, global command, Ex mode …). E.g.:
-"
-"         :g/pattern/'{,'}CommentToggle
-"                    ^
-"                    (Un)Comment every paragraph containing `pattern`.
-"
-"          :.,'aCommentToggle
-"           ^
-"          (Un)Comment from the current line to the one where mark `a` is set.
-"
-" Alternatively, we could use `:norm gc{object}`, but in a script,
-" `:CommentToggle` is more readable.
-
-com -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
+com -range -bar CommentToggle call comment#toggle#main('Ex', <line1>,<line2>)
 
 " Mappings {{{1
+" toggle {{{2
+
+nno <silent><unique> gc  :<c-u>set opfunc=comment#toggle#main<cr>g@
+xno <silent><unique> gc  :<c-u>call comment#toggle#main('visual')<cr>
+nno <silent><unique> gcc :<c-u>set opfunc=comment#toggle#main
+                         \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
+
+ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
+xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
+
+nmap <silent><unique> gcu gcic
+"                       │
+"                       └ Uncomment text-object
+
 " paste and comment {{{2
 
 " Paste and comment right afterwards.
@@ -33,41 +33,34 @@ com -range -bar CommentToggle call comment#toggle('Ex', <line1>,<line2>)
 "
 " Press `gV` or `g C-v` (custom mappings installed from our vimrc).
 "}}}
-nno <silent> cp :<c-u>call comment#and_paste(']', '')<cr>
-nno <silent> cP :<c-u>call comment#and_paste('[', '')<cr>
+nno <silent> cp :<c-u>call comment#paste#main(']', '')<cr>
+nno <silent> cP :<c-u>call comment#paste#main('[', '')<cr>
 
-nno <silent> <cp :<c-u>call comment#and_paste(']', '<')<cr>
-nno <silent> <cP :<c-u>call comment#and_paste('[', '<')<cr>
+nno <silent> <cp :<c-u>call comment#paste#main(']', '<')<cr>
+nno <silent> <cP :<c-u>call comment#paste#main('[', '<')<cr>
 
-nno <silent> >cp :<c-u>call comment#and_paste(']', '>')<cr>
-nno <silent> >cP :<c-u>call comment#and_paste('[', '>')<cr>
+nno <silent> >cp :<c-u>call comment#paste#main(']', '>')<cr>
+nno <silent> >cP :<c-u>call comment#paste#main('[', '>')<cr>
 
-nno <silent> =cp :<c-u>call comment#and_paste(']', '=')<cr>
-nno <silent> =cP :<c-u>call comment#and_paste('[', '=')<cr>
+nno <silent> =cp :<c-u>call comment#paste#main(']', '=')<cr>
+nno <silent> =cP :<c-u>call comment#paste#main('[', '=')<cr>
 
 " duplicate code {{{2
 
-nno <silent><unique> +d  :<c-u>set opfunc=comment#duplicate<cr>g@
-nno <silent><unique> +dd :<c-u>set opfunc=comment#duplicate
+nno <silent><unique> +d  :<c-u>set opfunc=comment#duplicate#main<cr>g@
+nno <silent><unique> +dd :<c-u>set opfunc=comment#duplicate#main
                          \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
-xno <silent><unique> +d  :<c-u>call comment#duplicate('vis')<cr>
+xno <silent><unique> +d  :<c-u>call comment#duplicate#main('vis')<cr>
+
+" comment half a block {{{2
+
+" Useful when we  debug an issue and try  to reduce a custom vimrc  to a minimum
+" amount of lines.
+nno <silent> gct :<c-u>call comment#half#save('top')<bar>set opfunc=comment#half#main<cr>g@l
+nno <silent> gcb :<c-u>call comment#half#save('bottom')<bar>set opfunc=comment#half#main<cr>g@l
 
 " motion {{{2
 
-noremap <expr><silent><unique> [" comment#search(0)
-noremap <expr><silent><unique> ]" comment#search(1)
-
-" toggle {{{2
-
-nno <silent><unique> gc  :<c-u>set opfunc=comment#toggle<cr>g@
-xno <silent><unique> gc  :<c-u>call comment#toggle('visual')<cr>
-nno <silent><unique> gcc :<c-u>set opfunc=comment#toggle
-                         \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
-
-ono <silent><unique> ic :<c-u>call comment#object(v:operator is# 'c')<cr>
-xno <silent><unique> ic :<c-u>call comment#object(0)<cr>
-
-nmap <silent><unique> gcu gcic
-"                       │
-"                       └ Uncomment text-object
+noremap <expr><silent><unique> [" comment#motion#main(0)
+noremap <expr><silent><unique> ]" comment#motion#main(1)
 
