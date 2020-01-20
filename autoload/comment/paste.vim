@@ -1,5 +1,9 @@
 " Interface {{{1
 fu comment#paste#main(where, how_to_indent) abort "{{{2
+    " you can get a weird result if you paste some text containing a fold marker;
+    " let's disable folding temporarily, to avoid any interference
+    let fen_save = &l:fen | setl nofen
+
     " In a markdown file, there're no comments.
     " However, it could still be useful to format the text as code output or quote.
     if &ft is# 'markdown'
@@ -57,8 +61,12 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             sil keepj keepp '[,']g/^\~$/s/\~//
         endif
     else
-        let [l, r] = comment#util#get_cml()
-        let l = matchstr(l, '\S*')
+        if &l:cms isnot# ''
+            let [l, r] = comment#util#get_cml()
+            let l = matchstr(l, '\S*')
+        else
+            let l = ''
+        endif
 
         call s:paste(a:where)
         " some of the next commands may alter the change marks; save them now
@@ -72,7 +80,6 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             \ ..' | CommentToggle'
             \ ..' | exe "norm! =="'
             \ ..' | s/\s*\%x01//e'
-
         " If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         "
         " This allows us  to paste some code and highlight it  as a codeblock in
@@ -89,6 +96,7 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
     if a:how_to_indent isnot# ''
         exe 'norm! '..start..'G'..a:how_to_indent..end..'G'
     endif
+    let &l:fen = fen_save
 endfu
 "}}}1
 " Core {{{1
