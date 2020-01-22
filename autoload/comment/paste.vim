@@ -1,5 +1,6 @@
 " Interface {{{1
 fu comment#paste#main(where, how_to_indent) abort "{{{2
+    let [cnt, view] = [v:count1, winsaveview()]
     " you can get a weird result if you paste some text containing a fold marker;
     " let's disable folding temporarily, to avoid any interference
     let fen_save = &l:fen | setl nofen
@@ -8,7 +9,7 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
     " However, it could still be useful to format the text as code output or quote.
     if &ft is# 'markdown'
         let is_quote = indent('.') == 0
-        call s:paste(a:where)
+        call s:paste(a:where) | let change_pos = getpos("'[")
         let [start, end] = [line("'["), line("']")]
         if is_quote
             '[,']CommentToggle
@@ -68,7 +69,8 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             let l = ''
         endif
 
-        call s:paste(a:where)
+        call s:paste(a:where) | let change_pos = getpos("'[")
+
         " some of the next commands may alter the change marks; save them now
         let [start, end] = [line("'["), line("']")]
         let range = start..','..end
@@ -86,17 +88,18 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
         " one single mapping.
         "}}}
         if a:how_to_indent is# '>'
-            sil exe 'keepj keepp '..range..'s/^\s*\V'..escape(l, '\/')..'\m\zs\ze.*\S/    /e'
-            "                                                                 ├─────┘
-            "                                                                 └ don't add trailing whitespace
-            "                                                                   on an empty commented line
-            return
+            "                                          ┌ don't add trailing whitespace on an empty commented line
+            "                                          ├─────┐
+            let pat = '^\s*\V'..escape(l, '\/')..'\m\zs\ze.*\S'
+            let rep = repeat(' ', &l:sw * cnt)
+            sil exe 'keepj keepp '..range..'s/'..pat..'/'..rep..'/e'
         endif
     endif
-    if a:how_to_indent isnot# ''
+    if a:how_to_indent isnot# '' && a:how_to_indent isnot# '>'
         exe 'norm! '..start..'G'..a:how_to_indent..end..'G'
     endif
     let &l:fen = fen_save
+    call winrestview(view) | call setpos('.', change_pos) | call search('\S', 'cW')
 endfu
 "}}}1
 " Core {{{1

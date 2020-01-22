@@ -13,7 +13,7 @@ com -range -bar CommentToggle call comment#toggle#main('Ex', <line1>,<line2>)
 nno <silent><unique> gc  :<c-u>set opfunc=comment#toggle#main<cr>g@
 xno <silent><unique> gc  :<c-u>call comment#toggle#main('visual')<cr>
 nno <silent><unique> gcc :<c-u>set opfunc=comment#toggle#main
-                         \ <bar>exe 'norm! g@'.v:count1.'_'<cr>
+                         \ <bar>exe 'norm! g@'..v:count1..'_'<cr>
 
 ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
 xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
@@ -49,7 +49,7 @@ nno <silent> =cP :<c-u>call comment#paste#main('[', '=')<cr>
 
 nno <silent><unique> +d  :<c-u>set opfunc=comment#duplicate#main<cr>g@
 nno <silent><unique> +dd :<c-u>set opfunc=comment#duplicate#main
-                         \ <bar>exe 'norm! '.v:count1.'g@_'<cr>
+                         \ <bar>exe 'norm! '..v:count1..'g@_'<cr>
 xno <silent><unique> +d  :<c-u>call comment#duplicate#main('vis')<cr>
 
 " comment half a block {{{2
