@@ -44,7 +44,7 @@ fu comment#motion#main(is_fwd, ...) abort "{{{2
 
     if mode is# 'n'
         let seq ..= 'zMzv'
-    elseif mode =~# "[vV\<c-v>]"
+    elseif mode =~# "^[vV\<c-v>]$"
         " don't close fold in visual mode,
         " it makes Vim select whole folds instead of some part of them
         let seq ..= 'zv'
