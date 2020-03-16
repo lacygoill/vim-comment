@@ -23,7 +23,7 @@ fu comment#duplicate#main(type) abort "{{{1
             norm! `]]p
         endif
     catch
-        return lg#catch_error()
+        return lg#catch()
     finally
         let &cb = cb_save
         let &sel = sel_save
