@@ -35,7 +35,8 @@ fu comment#motion#main(is_fwd, ...) abort "{{{2
            \ ?     '1|'
            \ :     ''
 
-    let new_address = search(pat, (a:is_fwd ? '' : 'b')..'n')
+    " don't remove the `W` flag; I like knowing when I've reached the last/first comment
+    let new_address = search(pat, (a:is_fwd ? '' : 'b')..'nW')
     if new_address != 0
         let seq ..= new_address..'G'
     else
