@@ -39,7 +39,7 @@ fu comment#util#maybe_trim_cml(line, l_, _r) abort "{{{1
     endif
 
     " don't break `:h line-continuation-comment` when commenting
-    if &ft is# 'vim' && a:line =~# '^\s*\ '
+    if &ft is# 'vim' && a:line =~# '^\s*\\ '
         return ['"', '']
     endif
 
