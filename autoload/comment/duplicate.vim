@@ -14,12 +14,12 @@ fu comment#duplicate#main(type) abort "{{{1
             '<,'>CommentToggle
             " add four spaces between comment  leader and beginning of the text,
             " so that if it's code, it's highlighted as a code block
-            sil exe "'<,'>s/^\\s*\\V"..escape(matchstr(comment#util#get_cml(), '\S*'), '\/')..'\m\zs/    /'
+            sil exe "'<,'>s/^\\s*\\V"..escape(matchstr(comment#util#get_cml()[0], '\S*'), '\/')..'\m\zs/    /'
             norm! `>]p
         else
             sil norm! '[y']
             '[,']CommentToggle
-            sil exe "'[,']s/^\\s*\\V"..escape(matchstr(comment#util#get_cml(), '\S*'), '\/')..'\m\zs/    /'
+            sil exe "'[,']s/^\\s*\\V"..escape(matchstr(comment#util#get_cml()[0], '\S*'), '\/')..'\m\zs/    /'
             norm! `]]p
         endif
     catch

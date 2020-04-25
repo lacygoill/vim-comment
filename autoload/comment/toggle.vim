@@ -11,38 +11,12 @@ fu comment#toggle#main(type, ...) abort "{{{2
         let [lnum1, lnum2] = [line("'["), line("']")]
     endif
 
-    "    ┌ comment leader (modified: add padding space)
-    "    │   ┌ end-comment leader ('' if there's none)
+    "    ┌ comment leader (with a padding space at the end)
+    "    │   ┌ end-comment leader (with a padding space at the start; or just an empty string)
     "    │   │
-    let [l_, r_] = comment#util#get_cml()
+    let [l_, _r] = comment#util#get_cml()
 
-    " Decide what to do:   comment or uncomment?
-    " The decision will be stored in the variable `uncomment`:
-    "
-    "    - 0 = the operator will comment    the range of lines
-    "    - 2 = "                 uncomment  "
-
-    " Why 2 instead of 1?{{{
-    "
-    " Nested comments  use numbers to denote  the level of imbrication.   2 is a
-    " convenient value to compute an (in|de)cremented level:
-    "
-    "     old_lvl - uncomment + 1
-    "               │
-    "               └ should be 2 or 0
-    "}}}
-    let uncomment = 2
-    for lnum in range(lnum1, lnum2)
-        let line = getline(lnum)
-        " If needed for the current line, trim the comment leader.
-        let [l, r] = comment#util#maybe_trim_cml(line, l_, r_)
-
-        " To comment a range of lines, one of them must be non-empty or non-commented.
-        if  line =~ '\S'
-      \ && !comment#util#is_commented(line, l, r)
-            let uncomment = 0
-        endif
-    endfor
+    let uncomment = s:do_we_uncomment(lnum1, lnum2, l_, _r)
 
     " Why do you get the indent of first line?{{{
     "
@@ -61,7 +35,7 @@ fu comment#toggle#main(type, ...) abort "{{{2
         " Don't do anything if the line is empty.
         if  line !~ '\S' | continue | endif
 
-        let [l, r] = comment#util#maybe_trim_cml(line, l_, r_)
+        let [l, r] = comment#util#maybe_trim_cml(line, l_, _r)
 
         " Add support for nested comments.
         " Example: In an html file:
@@ -141,5 +115,29 @@ fu comment#toggle#main(type, ...) abort "{{{2
         do <nomodeline> User CommentTogglePost
     endif
 endfu
-
+"}}}1
+" Core {{{1
+fu s:do_we_uncomment(lnum1, lnum2, l_, _r) abort
+    " by default, let's assume we want to uncomment
+    " Why 2 instead of 1?{{{
+    "
+    " Nested comments use numbers to express the level of imbrication.
+    " 2 is a convenient value to compute a decremented level:
+    "
+    "     let new_lvl = old_lvl - uncomment + 1
+    "                             │
+    "                             └ should be 2 for `new_lvl` to be correct
+    "}}}
+    let uncomment = 2
+    for lnum in range(a:lnum1, a:lnum2)
+        let line = getline(lnum)
+        " if needed for the current line, trim the comment leader
+        let [l, r] = comment#util#maybe_trim_cml(line, a:l_, a:_r)
+        " to comment a range of lines, one of them must be non-empty and non-commented
+        if line =~ '\S' && !comment#util#is_commented(line, l, r)
+            let uncomment = 0
+        endif
+    endfor
+    return uncomment
+endfu
 

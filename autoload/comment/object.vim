@@ -1,5 +1,5 @@
 fu comment#object#main(op_is_c) abort "{{{1
-    let [l_, r_] = comment#util#get_cml()
+    let [l_, _r] = comment#util#get_cml()
     let boundaries = [line('.')+1, line('.')-1]
 
     "       ┌ 0 or 1:  upper or lower boundary
@@ -8,7 +8,7 @@ fu comment#object#main(op_is_c) abort "{{{1
   \ in  [[    0,    -1,           1,   getline('.')]
   \ ,    [    1,     1,   line('$'),   getline('.')]]
 
-        let [l , r] = comment#util#maybe_trim_cml(getline('.'), l_, r_)
+        let [l , r] = comment#util#maybe_trim_cml(getline('.'), l_, _r)
         while comment#util#is_commented(next_line, l, r)
             " stop if the boundary has reached the beginning/end of a fold
             let fmr = join(split(&l:fmr, ','), '\|')
@@ -19,7 +19,7 @@ fu comment#object#main(op_is_c) abort "{{{1
 
             " update `line`, `l`, `r` before next test
             let next_line = getline(boundaries[which]+dir)
-            let [l, r] = comment#util#maybe_trim_cml(next_line, l_, r_)
+            let [l, r] = comment#util#maybe_trim_cml(next_line, l_, _r)
         endwhile
     endfor
 
