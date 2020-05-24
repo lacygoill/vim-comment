@@ -49,7 +49,7 @@ fu comment#toggle#main(type, ...) abort "{{{2
         "            │ … otherwise the incrementation/decrementation could affect
         "            │ numbers inside the comment text, which are not concerned:
         "            │         r = 'x'
-        "            │         right_number = r[:-2].'\zs\d\+\ze'.r[-1:-1]
+        "            │         right_number = r[:-2]..'\zs\d\+\ze'..r[-1:-1]
         "            │                      = '\zs\d\+\zex'
         "            │ }}}
         if strlen(r) >= 2 && l..r !~ '\\'
