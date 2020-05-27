@@ -1,12 +1,15 @@
 " Interface {{{1
-fu comment#toggle#main(type, ...) abort "{{{2
+fu comment#toggle#main(...) abort "{{{2
+    if !a:0
+        let &opfunc = 'comment#toggle#main'
+        return 'g@'
+    endif
+    let type = a:0 == 1 ? a:1 : 'Ex'
     if empty(&l:cms) | return | endif
 
     " Define the range of lines to (un)comment.
-    if a:type is# 'Ex'
+    if type is# 'Ex'
         let [lnum1, lnum2] = [a:1, a:2]
-    elseif a:type is# 'visual'
-        let [lnum1, lnum2] = [line("'<"), line("'>")]
     else
         let [lnum1, lnum2] = [line("'["), line("']")]
     endif

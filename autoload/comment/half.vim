@@ -1,4 +1,10 @@
-fu comment#half#main(_) abort "{{{1
+fu comment#half#setup(dir) abort "{{{1
+    let s:half_to_comment = a:dir
+    let &opfunc = 'comment#half#do'
+    return 'g@l'
+endfu
+"}}}1
+fu comment#half#do(_) abort "{{{1
     let half = get(s:, 'half_to_comment', '')
     let first_lnum = line("'{")+1
     let last_lnum = line("'}")-1
@@ -13,9 +19,5 @@ fu comment#half#main(_) abort "{{{1
     exe lnum1..','..lnum2..'CommentToggle'
     " position cursor on first/last line of the remaining uncommented block of lines
     exe half is# 'top' ? lnum2 : lnum1
-endfu
-
-fu comment#half#save(where) abort "{{{1
-    let s:half_to_comment = a:where
 endfu
 

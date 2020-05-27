@@ -5,15 +5,14 @@ let g:loaded_comment = 1
 
 " Commands {{{1
 
-com -range -bar CommentToggle call comment#toggle#main('Ex', <line1>,<line2>)
+com -range -bar CommentToggle call comment#toggle#main(<line1>,<line2>)
 
 " Mappings {{{1
 " toggle {{{2
 
-nno <silent><unique> gc  :<c-u>set opfunc=comment#toggle#main<cr>g@
-xno <silent><unique> gc  :<c-u>call comment#toggle#main('visual')<cr>
-nno <silent><unique> gcc :<c-u>set opfunc=comment#toggle#main
-                         \ <bar>exe 'norm! g@'..v:count1..'_'<cr>
+nno <expr><unique> gc comment#toggle#main()
+xno <expr><unique> gc comment#toggle#main()
+nno <expr><unique> gcc comment#toggle#main()..'_'
 
 ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
 xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
@@ -47,17 +46,16 @@ nno <silent> =cP :<c-u>call comment#paste#main('[', '=')<cr>
 
 " duplicate code {{{2
 
-nno <silent><unique> +d  :<c-u>set opfunc=comment#duplicate#main<cr>g@
-nno <silent><unique> +dd :<c-u>set opfunc=comment#duplicate#main
-                         \ <bar>exe 'norm! '..v:count1..'g@_'<cr>
-xno <silent><unique> +d  :<c-u>call comment#duplicate#main('vis')<cr>
+nno <expr><unique> +d  comment#duplicate#main()
+nno <expr><unique> +dd comment#duplicate#main()..'_'
+xno <expr><unique> +d  comment#duplicate#main()
 
 " comment half a block {{{2
 
 " Useful when we  debug an issue and try  to reduce a custom vimrc  to a minimum
 " amount of lines.
-nno <silent> gct :<c-u>call comment#half#save('top')<bar>set opfunc=comment#half#main<cr>g@l
-nno <silent> gcb :<c-u>call comment#half#save('bottom')<bar>set opfunc=comment#half#main<cr>g@l
+nno <expr><unique> gct comment#half#setup('top')
+nno <expr><unique> gcb comment#half#setup('bottom')
 
 " motion {{{2
 
