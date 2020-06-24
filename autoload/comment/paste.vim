@@ -29,8 +29,8 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             "
             " ---
             "
-            "     call setreg(v:register, join(map(getreg(v:register, 1, 1),
-            "         \ {_,v -> substitute(v, '$', '\~', '')}), "\n"), 'l')
+            "     call setreg(v:register, map(getreg(v:register, 1, 1),
+            "         \ {_,v -> substitute(v, '$', '\~', '')}), 'l')
             "}}}
 
             " Do *not* use this `norm! '[V']A~`!{{{

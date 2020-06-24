@@ -3,12 +3,10 @@ fu comment#duplicate#main(...) abort "{{{1
         let &opfunc = 'comment#duplicate#main'
         return 'g@'
     endif
-    let cb_save = &cb
-    let sel_save = &selection
-    let reg_save = ['"', getreg('"'), getregtype('"')]
+    let [cb_save, sel_save] = [&cb, &sel]
+    let reg_save = getreginfo('"')
     try
-        set cb-=unnamed cb-=unnamedplus
-        set selection=inclusive
+        set cb-=unnamed cb-=unnamedplus sel=inclusive
 
         " TODO: prevent the function from doing anything if a line is already commented.
         " For example, if you press by accident `+dd` twice on the same line, it
@@ -20,9 +18,8 @@ fu comment#duplicate#main(...) abort "{{{1
     catch
         return lg#catch()
     finally
-        let &cb = cb_save
-        let &sel = sel_save
-        call call('setreg', reg_save)
+        let [&cb, &sel] = [cb_save, sel_save]
+        call setreg('"', reg_save)
     endtry
 endfu
 
