@@ -6,7 +6,7 @@ fu comment#duplicate#main(...) abort "{{{1
     let [cb_save, sel_save] = [&cb, &sel]
     let reg_save = getreginfo('"')
     try
-        set cb-=unnamed cb-=unnamedplus sel=inclusive
+        set cb= sel=inclusive
 
         " TODO: prevent the function from doing anything if a line is already commented.
         " For example, if you press by accident `+dd` twice on the same line, it

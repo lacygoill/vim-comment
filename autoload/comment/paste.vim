@@ -29,8 +29,17 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             "
             " ---
             "
-            "     call setreg(v:register, map(getreg(v:register, 1, 1),
-            "         \ {_,v -> substitute(v, '$', '\~', '')}), 'l')
+            "     let reginfo = getreginfo(v:register)
+            "     let contents = get(reginfo, 'regcontents', [])
+            "     call map(contents, {_,v -> substitute(v, '$', '\~', '')})
+            "     call deepcopy(reginfo)
+            "        \ ->extend({'regcontents': contents, 'regtype': 'l'})
+            "        \ ->setreg(v:register)
+            "
+            "     ...
+            "     call s:paste(a:where)
+            "     ...
+            "     call setreg(v:register, reginfo)
             "}}}
 
             " Do *not* use this `norm! '[V']A~`!{{{
