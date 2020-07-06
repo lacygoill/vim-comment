@@ -5,7 +5,7 @@ let g:loaded_comment = 1
 
 " Commands {{{1
 
-com -range -bar CommentToggle call comment#toggle#main(<line1>,<line2>)
+com -range -bar CommentToggle call comment#toggle#main(<line1>, <line2>)
 
 " Mappings {{{1
 " toggle {{{2
