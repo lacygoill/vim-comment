@@ -1,4 +1,9 @@
 fu comment#util#get_cml() abort "{{{1
+    " handle Vim9 comments
+    if &ft is# 'vim' && getline('.') =~# '^\s*#'
+        return ['# ', '']
+    endif
+
     " This function should return a list of 2 strings:
     "
     "    - the beginning of a comment string; e.g. for vim:    `" `

@@ -17,9 +17,15 @@ nno <expr><unique> gcc comment#toggle#main()..'_'
 ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
 xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
 
-nmap <silent><unique> gcu gcic
-"                       │
-"                       └ Uncomment text-object
+" Why not just `gcic` in the rhs?{{{
+"
+" Suppose you accidentally press `gcu` on an *un*commented line.
+" `ic` won't select anything, and `gc` will comment the current line.
+" That's not what  we want; if there's  no commented line where we  are, then we
+" don't want anything to happen.
+"}}}
+nmap <silent><unique> gcu vic<plug>(uncomment-selection)
+xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
 
 " paste and comment {{{2
 
