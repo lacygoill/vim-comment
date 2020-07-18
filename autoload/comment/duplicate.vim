@@ -1,6 +1,8 @@
 fu comment#duplicate#main() abort "{{{1
     let &opfunc = 'lg#opfunc'
-    let g:opfunc_core = 'comment#duplicate#main_core'
+    let g:opfunc = {
+        \ 'core': 'comment#duplicate#main_core',
+        \ }
     return 'g@'
 endfu
 

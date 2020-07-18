@@ -1,6 +1,6 @@
 fu comment#util#get_cml() abort "{{{1
     " handle Vim9 comments
-    if &ft is# 'vim' && getline('.') =~# '^\s*#'
+    if &ft is# 'vim' && getline(1) is# 'vim9script'
         return ['# ', '']
     endif
 
