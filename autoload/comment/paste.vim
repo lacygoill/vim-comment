@@ -93,8 +93,8 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             \ ..' | s/\s*\%x01//e'
         " If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         "
-        " This allows us  to paste some code and highlight it  as a codeblock in
-        " one single mapping.
+        " This lets us  paste some code and  highlight it as a  codeblock in one
+        " single mapping.
         "}}}
         if a:how_to_indent is# '>'
             "                                          ┌ don't add trailing whitespace on an empty commented line
