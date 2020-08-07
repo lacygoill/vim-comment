@@ -12,7 +12,7 @@ com -range -bar CommentToggle call comment#toggle#main(<line1>, <line2>)
 
 nno <expr><unique> gc comment#toggle#main()
 xno <expr><unique> gc comment#toggle#main()
-nno <expr><unique> gcc comment#toggle#main()..'_'
+nno <expr><unique> gcc comment#toggle#main() .. '_'
 
 ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
 xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
@@ -53,7 +53,7 @@ nno <silent> =cP :<c-u>call comment#paste#main('[', '=')<cr>
 " duplicate code {{{2
 
 nno <expr><unique> +d  comment#duplicate#main()
-nno <expr><unique> +dd comment#duplicate#main()..'_'
+nno <expr><unique> +dd comment#duplicate#main() .. '_'
 xno <expr><unique> +d  comment#duplicate#main()
 
 " comment half a block {{{2

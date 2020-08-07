@@ -1,5 +1,7 @@
+import Opfunc from 'lg.vim' | const s:SID = execute('fu s:Opfunc')->matchstr('\C\<def\s\+\zs<SNR>\d\+_')
+
 fu comment#duplicate#main() abort "{{{1
-    let &opfunc = 'lg#opfunc'
+    let &opfunc = s:SID .. 'Opfunc'
     let g:opfunc = {
         \ 'core': 'comment#duplicate#main_core',
         \ }
@@ -12,7 +14,9 @@ fu comment#duplicate#main_core(_) abort
     " shouldn't do anything the second time.
     sil norm! '[y']
     '[,']CommentToggle
-    sil exe "'[,']s/^\\s*\\V"..comment#util#get_cml()[0]->matchstr('\S*')->escape('\/')..'\m\zs/    /'
+    sil exe "'[,']s/^\\s*\\V"
+        \ .. comment#util#get_cml()[0]->matchstr('\S*')->escape('\/')
+        \ .. '\m\zs/    /'
     norm! `]]p
 endfu
 

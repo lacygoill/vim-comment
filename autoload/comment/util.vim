@@ -29,12 +29,12 @@ fu comment#util#get_cml() abort "{{{1
 endfu
 
 fu comment#util#maybe_trim_cml(line, l_, _r) abort "{{{1
-    let [l_, _r] = [a:l_    , a:_r]
-    let [l, r]   = [l_[0:-2], _r[1:]]
-    "                 ├────┘    ├──┘{{{
-    "                 │         └ remove 1st whitespace
-    "                 │
-    "                 └ remove last whitespace
+    let [l_, _r] = [a:l_, a:_r]
+    let [l, r] = [l_[0:-2], _r[1:]]
+    "               ├────┘    ├──┘{{{
+    "               │         └ remove 1st whitespace
+    "               │
+    "               └ remove last whitespace
     "}}}
 
     " if the  line is commented with  the trimmed comment leaders,  but not with

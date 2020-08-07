@@ -31,10 +31,10 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             "
             "     let reginfo = getreginfo(v:register)
             "     let contents = get(reginfo, 'regcontents', [])
-            "     call map(contents, {_,v -> substitute(v, '$', '\~', '')})
+            "     call map(contents, {_, v -> substitute(v, '$', '\~', '')})
             "     call deepcopy(reginfo)
-            "        \ ->extend({'regcontents': contents, 'regtype': 'l'})
-            "        \ ->setreg(v:register)
+            "         \ ->extend({'regcontents': contents, 'regtype': 'l'})
+            "         \ ->setreg(v:register)
             "
             "     ...
             "     call s:paste(a:where)
@@ -61,7 +61,7 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             "
             " MWE:
             "
-            "     $ vim +'put =repeat(\"a\", winwidth(0)-5).\"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
+            "     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
             "
             " The explanation of this behavior may be given at `:h v_b_A`.
             " Anyway, with a long wrapped line,  it's possible that the block is
@@ -71,7 +71,7 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
             sil keepj keepp '[,']g/^\~$/s/\~//
         endif
     else
-        if &l:cms isnot# ''
+        if &l:cms != ''
             let [l, r] = comment#util#get_cml()
             let l = matchstr(l, '\S*')
         else
@@ -82,30 +82,30 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
 
         " some of the next commands may alter the change marks; save them now
         let [start, end] = [line("'["), line("']")]
-        let range = start..','..end
+        let range = start .. ',' .. end
         " comment
-        exe range..'CommentToggle'
+        exe range .. 'CommentToggle'
         " I don't like empty non-commented line in "the middle of a multi-line comment.
-        sil exe 'keepj keepp '..range..'g/^$/'
-            \ ..'exe "norm! i\<c-v>\<c-a>"'
-            \ ..' | CommentToggle'
-            \ ..' | exe "norm! =="'
-            \ ..' | s/\s*\%x01//e'
+        sil exe 'keepj keepp ' .. range .. 'g/^$/'
+            \ .. 'exe "norm! i\<c-v>\<c-a>"'
+            \ .. ' | CommentToggle'
+            \ .. ' | exe "norm! =="'
+            \ .. ' | s/\s*\%x01//e'
         " If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         "
         " This lets us  paste some code and  highlight it as a  codeblock in one
         " single mapping.
         "}}}
         if a:how_to_indent is# '>'
-            "                                          ┌ don't add trailing whitespace on an empty commented line
-            "                                          ├─────┐
-            let pat = '^\s*\V'..escape(l, '\/')..'\m\zs\ze.*\S'
+            "                                              ┌ don't add trailing whitespace on an empty commented line
+            "                                              ├─────┐
+            let pat = '^\s*\V' .. escape(l, '\/') .. '\m\zs\ze.*\S'
             let rep = repeat(' ', &l:sw * cnt)
-            sil exe 'keepj keepp '..range..'s/'..pat..'/'..rep..'/e'
+            sil exe 'keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
         endif
     endif
-    if a:how_to_indent isnot# '' && a:how_to_indent isnot# '>'
-        exe 'norm! '..start..'G'..a:how_to_indent..end..'G'
+    if a:how_to_indent != '' && a:how_to_indent isnot# '>'
+        exe 'norm! ' .. start .. 'G' .. a:how_to_indent .. end .. 'G'
     endif
     let &l:fen = fen_save
     call winrestview(view) | call setpos('.', change_pos) | call search('\S', 'cW')
@@ -119,12 +119,12 @@ fu s:paste(where) abort "{{{2
     " We use it because it's convenient in an interactive usage (easier to type).
     " But we don't want it to interfere here (we're in a script now).
     "}}}
-    exe 'norm! "'..v:register
+    exe 'norm! "' .. v:register
     " Do *not* add a bang.{{{
     "
     " We need our custom `]p` to be pressed so that the the text is pasted as if
     " it was linewise, even if in reality it's characterwise.
     "}}}
-    exe 'norm '..a:where..'p'
+    exe 'norm ' .. a:where .. 'p'
 endfu
 

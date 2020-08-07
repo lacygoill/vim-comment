@@ -30,13 +30,13 @@ fu comment#toggle#main(...) abort "{{{2
     " We want all of them to be aligned under the first one.
     " To do this, we need to know the level of indentation of the first line.
     "}}}
-    let indent = matchstr(getline(lnum1), '^\s*')
+    let indent = getline(lnum1)->matchstr('^\s*')
 
-    for lnum in range(lnum1,lnum2)
+    for lnum in range(lnum1, lnum2)
         let line = getline(lnum)
 
         " Don't do anything if the line is empty.
-        if  line !~ '\S' | continue | endif
+        if line !~ '\S' | continue | endif
 
         let [l, r] = comment#util#maybe_trim_cml(line, l_, _r)
 
@@ -52,18 +52,18 @@ fu comment#toggle#main(...) abort "{{{2
         "            │ … otherwise the incrementation/decrementation could affect
         "            │ numbers inside the comment text, which are not concerned:
         "            │         r = 'x'
-        "            │         right_number = r[:-2]..'\zs\d\+\ze'..r[-1:-1]
+        "            │         right_number = r[:-2] .. '\zs\d\+\ze' .. r[-1:-1]
         "            │                      = '\zs\d\+\zex'
         "            │ }}}
-        if strlen(r) >= 2 && l..r !~ '\\'
-        "                             │
-        "                             └ No matter the magicness of a pattern, a backslash
-        "                               has always a special meaning. So, we make sure
-        "                               that there's none in the comment leader.
+        if strlen(r) >= 2 && l .. r !~ '\\'
+        "                               │
+        "                               └ No matter the magicness of a pattern, a backslash
+        "                                 has always a special meaning.  So, we make sure
+        "                                 that there's none in the comment leader.
 
-            let left_number = l[0]..'\zs\d\*\ze'..l[1:]
-            let right_number = r[:-2]..'\zs\d\*\ze'..r[-1:-1]
-            let pat = '\V'..left_number..'\|'..right_number
+            let left_number = l[0] .. '\zs\d\*\ze' .. l[1:]
+            let right_number = r[:-2] .. '\zs\d\*\ze' .. r[-1:-1]
+            let pat = '\V' .. left_number .. '\|' .. right_number
             let l:Rep = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
             let line = substitute(line, pat, l:Rep, 'g')
         endif
@@ -72,7 +72,7 @@ fu comment#toggle#main(...) abort "{{{2
             let pat = '\S.*\s\@1<!'
             let l:Rep = {m -> m[0][strlen(l) : -1 - strlen(r)]}
         else
-            let pat = '^\%('..indent..'\|\s*\)\zs.*'
+            let pat = '^\%(' .. indent .. '\|\s*\)\zs.*'
             " Why?{{{
             "
             " Without,  a comment  leader may  be misaligned  if it  comments an
@@ -105,8 +105,8 @@ fu comment#toggle#main(...) abort "{{{2
             "     "      "
             "     "      " bar
             "}}}
-            if line =~# '^\s*'..l..'$' | let l ..= ' ' | endif
-            let l:Rep = {m -> l..m[0]..r}
+            if line =~# '^\s*' .. l .. '$' | let l ..= ' ' | endif
+            let l:Rep = {m -> l .. m[0] .. r}
         endif
 
         let line = substitute(line, pat, l:Rep, '')

@@ -1,17 +1,17 @@
 fu comment#object#main(op_is_c) abort "{{{1
     let [l_, _r] = comment#util#get_cml()
-    let boundaries = [line('.')+1, line('.')-1]
+    let boundaries = [line('.') + 1, line('.') - 1]
 
     "       ┌ 0 or 1:  upper or lower boundary
     "       │
-    for  [which,   dir,       limit,      next_line]
-  \ in  [[    0,    -1,           1,   getline('.')]
-  \ ,    [    1,     1,   line('$'),   getline('.')]]
+    for  [which, dir, limit, next_line]
+  \ in  [[0, -1, 1, getline('.')],
+  \ [1, 1, line('$'), getline('.')]]
 
         let [l , r] = comment#util#maybe_trim_cml(getline('.'), l_, _r)
         while comment#util#is_commented(next_line, l, r)
             " stop if the boundary has reached the beginning/end of a fold
-            let fmr = join(split(&l:fmr, ','), '\|')
+            let fmr = split(&l:fmr, ',')->join('\|')
             if match(next_line, fmr) != -1 | break | endif
 
             " the test was successful so (inc|dec)rement the boundary
@@ -52,9 +52,9 @@ fu comment#object#main(op_is_c) abort "{{{1
     if l:Invalid_boundaries() | return | endif
 
     " position the cursor on the 1st line of the object
-    exe 'norm! '..boundaries[0]..'G'
+    exe 'norm! ' .. boundaries[0] .. 'G'
 
     " select the object
-    exe 'norm! V'..boundaries[1]..'G'
+    exe 'norm! V' .. boundaries[1] .. 'G'
 endfu
 

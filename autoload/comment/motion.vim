@@ -32,11 +32,11 @@ fu comment#motion#main(is_fwd, ...) abort "{{{2
     " That's not what we want.
     "}}}
     let seq ..= mode =~# "[nvV\<c-v>]"
-           \ ?     '1|'
-           \ :     ''
+        \ ?     '1|'
+        \ :     ''
 
     " don't remove the `W` flag; I like knowing when I've reached the last/first comment
-    let res = searchpos(pat, (a:is_fwd ? '' : 'b')..'W')
+    let res = searchpos(pat, (a:is_fwd ? '' : 'b') .. 'W')
     " we need `virtcol()` to handle a possible leading tab character
     let [lnum, vcol] = [line('.'), virtcol('.')]
     if res != [0, 0]
@@ -64,18 +64,18 @@ fu s:get_search_pat() abort "{{{2
         let l = '["#]'
     else
         let cml = split(&l:cms, '%s')
-        let l = '\V'..matchstr(cml[0], '\S\+')->escape('\')..'\m'
+        let l = '\V' .. matchstr(cml[0], '\S\+')->escape('\') .. '\m'
     endif
 
     " We're looking for a commented line of text.
     " It must begin a fold.
     " Or the line before must not be commented.
     "
-    "            ┌ no commented line just before
-    "            │                        ┌ a commented line of text
-    "            ├───────────────────────┐├────────┐
-    let pat  =  '^\%(^\s*'..l..'.*\n\)\@<!\s*\zs'..l
-    let pat ..= '\|^\s*\zs'..l..'.*{{'..'{'
+    "          ┌ no commented line just before
+    "          │                            ┌ a commented line of text
+    "          ├───────────────────────────┐├──────────┐
+    let pat = '^\%(^\s*' .. l .. '.*\n\)\@<!\s*\zs' .. l
+    let pat ..= '\|^\s*\zs' .. l .. '.*{{' .. '{'
     return pat
 endfu
 
