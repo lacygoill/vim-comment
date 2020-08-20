@@ -45,7 +45,7 @@ fu comment#util#maybe_trim_cml(line, l_, _r) abort "{{{1
 
     " don't break `:h line-continuation-comment` when commenting
     if &ft is# 'vim' && a:line =~# '^\s*\\ '
-        return ['"', '']
+        return [getline(1) ==# 'vim9script' ? '#' : '"', '']
     endif
 
     " by default, return the space-padded comment leaders
@@ -61,8 +61,8 @@ fu comment#util#is_commented(line, l, r) abort "{{{1
 
     "      ┌ the line begins with the comment leader
     "      ├────────────────────┐
-    return stridx(line, a:l) == 0 && line[strlen(line)-strlen(a:r):] is# a:r
-    "                                └─────────────────────────────────────┤
-    "                             it also ends with the end-comment leader ┘
+    return stridx(line, a:l) == 0 && line[strlen(line) - strlen(a:r) :] is# a:r
+    "                                └────────────────────────────────────────┤
+    "                                it also ends with the end-comment leader ┘
 endfu
 
