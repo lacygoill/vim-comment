@@ -1,6 +1,8 @@
+import IsVim9 from 'lg.vim'
+
 fu comment#util#get_cml() abort "{{{1
     " handle Vim9 comments
-    if &ft is# 'vim' && getline(1) is# 'vim9script'
+    if s:IsVim9()
         return ['# ', '']
     endif
 
@@ -30,12 +32,7 @@ endfu
 
 fu comment#util#maybe_trim_cml(line, l_, _r) abort "{{{1
     let [l_, _r] = [a:l_, a:_r]
-    let [l, r] = [l_[0:-2], _r[1:]]
-    "               ├────┘    ├──┘{{{
-    "               │         └ remove 1st whitespace
-    "               │
-    "               └ remove last whitespace
-    "}}}
+    let [l, r] = [trim(l_, ' ', 2), trim(_r, ' ', 1)]
 
     " if the  line is commented with  the trimmed comment leaders,  but not with
     " the space-padded ones, return the trimmed ones
@@ -43,9 +40,11 @@ fu comment#util#maybe_trim_cml(line, l_, _r) abort "{{{1
         return [l, r]
     endif
 
-    " don't break `:h line-continuation-comment` when commenting
-    if &ft is# 'vim' && a:line =~# '^\s*\\ '
-        return [getline(1) ==# 'vim9script' ? '#' : '"', '']
+    " don't break `:h line-continuation-comment` when commenting a line starting
+    " with a backslash (i.e. don't insert a space between the comment leader and
+    " the backslash)
+    if &ft is# 'vim' && a:line =~# '^\s*\\ ' && !s:IsVim9()
+        return ['"', '']
     endif
 
     " by default, return the space-padded comment leaders
