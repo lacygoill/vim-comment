@@ -8,7 +8,7 @@ fu comment#object#main(op_is_c) abort "{{{1
   \ in  [[0, -1, 1, getline('.')],
   \ [1, 1, line('$'), getline('.')]]
 
-        let [l , r] = comment#util#maybe_trim_cml(getline('.'), l_, _r)
+        let [l , r] = getline('.')->comment#util#maybe_trim_cml(l_, _r)
         while comment#util#is_commented(next_line, l, r)
             " stop if the boundary has reached the beginning/end of a fold
             let fmr = split(&l:fmr, ',')->join('\|')
