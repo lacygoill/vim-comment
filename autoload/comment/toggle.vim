@@ -65,7 +65,7 @@ fu comment#toggle#main(...) abort "{{{2
             let right_number = r[:-2] .. '\zs\d\*\ze' .. r[-1:-1]
             let pat = '\V' .. left_number .. '\|' .. right_number
             let l:Rep = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
-            let line = substitute(line, pat, l:Rep, 'g')
+            let line = substitute(line, pat, Rep, 'g')
         endif
 
         if uncomment
@@ -109,7 +109,7 @@ fu comment#toggle#main(...) abort "{{{2
             let l:Rep = {m -> l .. m[0] .. r}
         endif
 
-        let line = substitute(line, pat, l:Rep, '')
+        let line = substitute(line, pat, Rep, '')
         call setline(lnum, line)
     endfor
 

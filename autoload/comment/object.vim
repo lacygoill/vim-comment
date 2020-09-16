@@ -29,7 +29,7 @@ fu comment#object#main(op_is_c) abort "{{{1
         \ || boundaries[0] > boundaries[1]
         \ }
 
-    if l:Invalid_boundaries() | return | endif
+    if Invalid_boundaries() | return | endif
 
     "  ┌ we operate on the object with `c`
     "  │            ┌ OR the object doesn't end at the very end of the buffer
@@ -49,7 +49,7 @@ fu comment#object#main(op_is_c) abort "{{{1
         endwhile
     endif
 
-    if l:Invalid_boundaries() | return | endif
+    if Invalid_boundaries() | return | endif
 
     " position the cursor on the 1st line of the object
     exe 'norm! ' .. boundaries[0] .. 'G'
