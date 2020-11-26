@@ -1,4 +1,4 @@
-fu comment#object#main(op_is_c) abort "{{{1
+fu comment#object#main(op_is_c = v:false) abort "{{{1
     let [l_, _r] = comment#util#get_cml()
     let boundaries = [line('.') + 1, line('.') - 1]
 
@@ -8,7 +8,7 @@ fu comment#object#main(op_is_c) abort "{{{1
   \ in  [[0, -1, 1, getline('.')],
   \ [1, 1, line('$'), getline('.')]]
 
-        let [l , r] = getline('.')->comment#util#maybe_trim_cml(l_, _r)
+        let [l, r] = getline('.')->comment#util#maybe_trim_cml(l_, _r)
         while comment#util#is_commented(next_line, l, r)
             " stop if the boundary has reached the beginning/end of a fold
             let fmr = split(&l:fmr, ',')->join('\|')
@@ -55,6 +55,6 @@ fu comment#object#main(op_is_c) abort "{{{1
     exe 'norm! ' .. boundaries[0] .. 'G'
 
     " select the object
-    exe 'norm! V' .. boundaries[1] .. 'G'
+    exe 'norm! ' .. (mode() =~ "[vV\<c-v>]" ? 'o' : 'V') .. boundaries[1] .. 'G'
 endfu
 

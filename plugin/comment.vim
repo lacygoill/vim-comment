@@ -14,8 +14,8 @@ nno <expr><unique> gc comment#toggle#main()
 xno <expr><unique> gc comment#toggle#main()
 nno <expr><unique> gcc comment#toggle#main() .. '_'
 
-ono <silent><unique> ic :<c-u>call comment#object#main(v:operator is# 'c')<cr>
-xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
+ono <unique> ic <cmd>call comment#object#main(v:operator is# 'c')<cr>
+xno <unique> ic <c-\><c-n><cmd>call comment#object#main()<cr>
 
 " Why not just `gcic` in the rhs?{{{
 "
@@ -24,7 +24,7 @@ xno <silent><unique> ic :<c-u>call comment#object#main(0)<cr>
 " That's not what  we want; if there's  no commented line where we  are, then we
 " don't want anything to happen.
 "}}}
-nmap <silent><unique> gcu vic<plug>(uncomment-selection)
+nmap <unique> gcu vic<plug>(uncomment-selection)
 xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
 
 " paste and comment {{{2
@@ -38,17 +38,17 @@ xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
 "
 " Press `gV` or `g C-v` (custom mappings installed from our vimrc).
 "}}}
-nno <silent> cp :<c-u>call comment#paste#main(']', '')<cr>
-nno <silent> cP :<c-u>call comment#paste#main('[', '')<cr>
+nno cp <cmd>call comment#paste#main(']', '')<cr>
+nno cP <cmd>call comment#paste#main('[', '')<cr>
 
-nno <silent> <cp :<c-u>call comment#paste#main(']', '<')<cr>
-nno <silent> <cP :<c-u>call comment#paste#main('[', '<')<cr>
+nno <cp <cmd>call comment#paste#main(']', '<')<cr>
+nno <cP <cmd>call comment#paste#main('[', '<')<cr>
 
-nno <silent> >cp :<c-u>call comment#paste#main(']', '>')<cr>
-nno <silent> >cP :<c-u>call comment#paste#main('[', '>')<cr>
+nno >cp <cmd>call comment#paste#main(']', '>')<cr>
+nno >cP <cmd>call comment#paste#main('[', '>')<cr>
 
-nno <silent> =cp :<c-u>call comment#paste#main(']', '=')<cr>
-nno <silent> =cP :<c-u>call comment#paste#main('[', '=')<cr>
+nno =cp <cmd>call comment#paste#main(']', '=')<cr>
+nno =cP <cmd>call comment#paste#main('[', '=')<cr>
 
 " duplicate code {{{2
 
@@ -65,6 +65,6 @@ nno <expr><unique> gcb comment#half#setup('bottom')
 
 " motion {{{2
 
-noremap <expr><silent><unique> [" comment#motion#main(0)
-noremap <expr><silent><unique> ]" comment#motion#main(1)
+noremap <expr><unique> ]" comment#motion#main()
+noremap <expr><unique> [" comment#motion#main(v:false)
 

@@ -1,5 +1,5 @@
 " Interface {{{1
-fu comment#motion#main(is_fwd, ...) abort "{{{2
+fu comment#motion#main(is_fwd = v:true) abort "{{{2
     " This function positions the cursor on the next/previous beginning of a comment.
     " Inspiration: $VIMRUNTIME/ftplugin/vim.vim
 
