@@ -108,7 +108,9 @@ fu comment#paste#main(where, how_to_indent) abort "{{{2
         exe 'norm! ' .. start .. 'G' .. a:how_to_indent .. end .. 'G'
     endif
     let &l:fen = fen_save
-    call winrestview(view) | call setpos('.', change_pos) | call search('\S', 'cW')
+    call winrestview(view)
+    call setpos('.', change_pos)
+    call search('\S', 'cW')
 endfu
 "}}}1
 " Core {{{1
