@@ -52,7 +52,7 @@ fu comment#toggle#main(...) abort "{{{2
         "            │ … otherwise the incrementation/decrementation could affect
         "            │ numbers inside the comment text, which are not concerned:
         "            │         r = 'x'
-        "            │         right_number = r[:-2] .. '\zs\d\+\ze' .. r[-1:-1]
+        "            │         right_number = r[: -2] .. '\zs\d\+\ze' .. r[-1 : -1]
         "            │                      = '\zs\d\+\zex'
         "            │ }}}
         if strlen(r) >= 2 && l .. r !~ '\\'
@@ -61,8 +61,8 @@ fu comment#toggle#main(...) abort "{{{2
         "                                 has always a special meaning.  So, we make sure
         "                                 that there's none in the comment leader.
 
-            let left_number = l[0] .. '\zs\d\*\ze' .. l[1:]
-            let right_number = r[:-2] .. '\zs\d\*\ze' .. r[-1:-1]
+            let left_number = l[0] .. '\zs\d\*\ze' .. l[1 :]
+            let right_number = r[: -2] .. '\zs\d\*\ze' .. r[-1 : -1]
             let pat = '\V' .. left_number .. '\|' .. right_number
             let l:Rep = {m -> m[0]-uncomment+1 <= 0 ? '' : m[0]-uncomment+1}
             let line = substitute(line, pat, Rep, 'g')
