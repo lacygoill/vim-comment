@@ -24,7 +24,7 @@ fu comment#util#get_cml() abort "{{{1
 
     " return the comment leader, and the possible end-comment leader,
     " through a list of 2 items
-    return split(cml, '%s', 1)
+    return split(cml, '%s', v:true)
     "                       │
     "                       └ always return 2 items, even if there's nothing
     "                         after `%s` (in this case, the 2nd item will be '')

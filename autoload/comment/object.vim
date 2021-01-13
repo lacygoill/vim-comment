@@ -1,4 +1,8 @@
 fu comment#object#main(op_is_c = v:false) abort "{{{1
+    if &l:cms == ''
+        return
+    endif
+
     let [l_, _r] = comment#util#get_cml()
     let boundaries = [line('.') + 1, line('.') - 1]
 
