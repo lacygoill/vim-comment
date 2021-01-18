@@ -1,22 +1,27 @@
-import Opfunc from 'lg.vim' | const s:SID = execute('fu s:Opfunc')->matchstr('\C\<def\s\+\zs<SNR>\d\+_')
+vim9 noclear
 
-fu comment#duplicate#main() abort "{{{1
-    let &opfunc = s:SID .. 'Opfunc'
-    let g:opfunc = {
-        \ 'core': 'comment#duplicate#main_core',
-        \ }
+if exists('loaded') | finish | endif
+var loaded = true
+
+import Opfunc from 'lg.vim'
+const SID: string = execute('fu Opfunc')->matchstr('\C\<def\s\+\zs<SNR>\d\+_')
+
+def comment#duplicate#main(): string #{{{1
+    &opfunc = SID .. 'Opfunc'
+    g:opfunc = {core: 'comment#duplicate#main_core'}
     return 'g@'
-endfu
+enddef
 
-fu comment#duplicate#main_core(_) abort
-    " TODO: prevent the function from doing anything if a line is already commented.
-    " For example, if you press by accident `+dd` twice on the same line, it
-    " shouldn't do anything the second time.
+def comment#duplicate#main_core(_: any)
+    # TODO: prevent the function from doing anything if a line is already commented.
+    # For example, if you press by accident `+dd` twice on the same line, it
+    # shouldn't do anything the second time.
     sil norm! '[y']
-    '[,']CommentToggle
-    sil exe "'[,']s/^\\s*\\V"
-        \ .. comment#util#get_cml()[0]->matchstr('\S*')->escape('\/')
-        \ .. '\m\zs/    /'
+    :'[,']CommentToggle
+    # comment#toggle#main(line("'["), line("']"))
+    sil exe ":'[,']s/^\\s*\\V"
+        .. comment#util#getCml()[0]->matchstr('\S*')->escape('\/')
+        .. '\m\zs/    /'
     norm! `]]p
-endfu
+enddef
 
