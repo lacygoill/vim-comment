@@ -25,7 +25,7 @@ def comment#object#main(op_is_c = false) #{{{1
         while comment#util#isCommented(next_line, l, r)
             # stop if the boundary has reached the beginning/end of a fold
             var fmr: string = split(&l:fmr, ',')->join('\|')
-            if match(next_line, fmr) != -1
+            if match(next_line, fmr) >= 0
                 break
             endif
 
