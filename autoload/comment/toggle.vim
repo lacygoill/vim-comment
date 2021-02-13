@@ -5,7 +5,7 @@ var loaded = true
 
 # Interface {{{1
 def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
-    if arg_type->type() == v:t_string && arg_type == ''
+    if arg_type->typename() == 'string' && arg_type == ''
         &opfunc = 'comment#toggle#main'
         return 'g@'
     endif
