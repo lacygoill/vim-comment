@@ -46,7 +46,7 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
             #
             #     var reginfo: dict<any> = getreginfo(v:register)
             #     var contents: list<string> = get(reginfo, 'regcontents', [])
-            #     map(contents, (_, v) => substitute(v, '$', '\~', ''))
+            #     map(contents, (_, v: string): string => substitute(v, '$', '\~', ''))
             #     deepcopy(reginfo)
             #         ->extend({regcontents: contents, regtype: 'l'})
             #         ->setreg(v:register)
