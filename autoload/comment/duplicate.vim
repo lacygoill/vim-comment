@@ -8,11 +8,11 @@ const SID: string = execute('fu Opfunc')->matchstr('\C\<def\s\+\zs<SNR>\d\+_')
 
 def comment#duplicate#main(): string #{{{1
     &opfunc = SID .. 'Opfunc'
-    g:opfunc = {core: 'comment#duplicate#main_core'}
+    g:opfunc = {core: 'comment#duplicate#mainCore'}
     return 'g@'
 enddef
 
-def comment#duplicate#main_core(_: any)
+def comment#duplicate#mainCore(_: any)
     # TODO: prevent the function from doing anything if a line is already commented.
     # For example, if you press by accident `+dd` twice on the same line, it
     # shouldn't do anything the second time.
