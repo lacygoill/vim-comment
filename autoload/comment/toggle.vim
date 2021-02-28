@@ -33,10 +33,10 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
     # comment leader (with a padding space at the end)
     var l_: string
     # end-comment leader (with a padding space at the start; or just an empty string)
-    var _r: string
-    [l_, _r] = comment#util#getCml()
+    var r_: string
+    [l_, r_] = comment#util#getCml()
 
-    var uncomment: number = DoWeUncomment(lnum1, lnum2, l_, _r)
+    var uncomment: number = DoWeUncomment(lnum1, lnum2, l_, r_)
 
     # Why do you get the indent of first line?{{{
     #
@@ -59,7 +59,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
 
         var l: string
         var r: string
-        [l, r] = comment#util#maybeTrimCml(line, l_, _r)
+        [l, r] = comment#util#maybeTrimCml(line, l_, r_)
 
         # Add support for nested comments.
         # Example: In an html file:
@@ -150,7 +150,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
 enddef
 #}}}1
 # Core {{{1
-def DoWeUncomment(lnum1: number, lnum2: number, l_: string, _r: string): number
+def DoWeUncomment(lnum1: number, lnum2: number, l_: string, r_: string): number
     # by default, let's assume we want to uncomment
     # Why 2 instead of 1?{{{
     #
@@ -167,7 +167,7 @@ def DoWeUncomment(lnum1: number, lnum2: number, l_: string, _r: string): number
         # if needed for the current line, trim the comment leader
         var l: string
         var r: string
-        [l, r] = comment#util#maybeTrimCml(line, l_, _r)
+        [l, r] = comment#util#maybeTrimCml(line, l_, r_)
         # to comment a range of lines, one of them must be non-empty and non-commented
         if line =~ '\S' && !comment#util#isCommented(line, l, r)
             uncomment = 0

@@ -35,13 +35,13 @@ def comment#util#getCml(): list<string> #{{{1
     #                         after `%s` (in this case, the 2nd item will be '')
 enddef
 
-def comment#util#maybeTrimCml(line: string, l_: string, _r: string): list<string> #{{{1
+def comment#util#maybeTrimCml(line: string, l_: string, r_: string): list<string> #{{{1
     var l: string = trim(l_, ' ', 2)
-    var r: string = trim(_r, ' ', 1)
+    var r: string = trim(r_, ' ', 1)
 
     # if the  line is commented with  the trimmed comment leaders,  but not with
     # the space-padded ones, return the trimmed ones
-    if comment#util#isCommented(line, l, r) && !comment#util#isCommented(line, l_, _r)
+    if comment#util#isCommented(line, l, r) && !comment#util#isCommented(line, l_, r_)
         return [l, r]
     endif
 
@@ -53,7 +53,7 @@ def comment#util#maybeTrimCml(line: string, l_: string, _r: string): list<string
     endif
 
     # by default, return the space-padded comment leaders
-    return [l_, _r]
+    return [l_, r_]
 enddef
 
 def comment#util#isCommented(arg_line: string, l: string, r: string): bool #{{{1

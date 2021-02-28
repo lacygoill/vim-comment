@@ -12,7 +12,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
         return ''
     endif
 
-    var mode: string = mode(1)
+    var mode: string = mode(true)
 
     var seq: string
     if mode == 'n'

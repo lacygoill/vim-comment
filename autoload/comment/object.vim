@@ -9,8 +9,8 @@ def comment#object#main(op_is_c = false) #{{{1
     endif
 
     var l_: string
-    var _r: string
-    [l_, _r] = comment#util#getCml()
+    var r_: string
+    [l_, r_] = comment#util#getCml()
     var boundaries: list<number> = [line('.') + 1, line('.') - 1]
 
     #       ┌ 0 or 1:  upper or lower boundary
@@ -21,7 +21,7 @@ def comment#object#main(op_is_c = false) #{{{1
 
         var l: string
         var r: string
-        [l, r] = getline('.')->comment#util#maybeTrimCml(l_, _r)
+        [l, r] = getline('.')->comment#util#maybeTrimCml(l_, r_)
         while comment#util#isCommented(next_line, l, r)
             # stop if the boundary has reached the beginning/end of a fold
             var fmr: string = split(&l:fmr, ',')->join('\|')
@@ -34,7 +34,7 @@ def comment#object#main(op_is_c = false) #{{{1
 
             # update `line`, `l`, `r` before next test
             next_line = getline(boundaries[which] + dir)
-            [l, r] = comment#util#maybeTrimCml(next_line, l_, _r)
+            [l, r] = comment#util#maybeTrimCml(next_line, l_, r_)
         endwhile
     endfor
 
