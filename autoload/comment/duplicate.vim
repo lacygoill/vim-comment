@@ -12,16 +12,18 @@ def comment#duplicate#main(): string #{{{1
     return 'g@'
 enddef
 
-def comment#duplicate#mainCore(_: any)
+def comment#duplicate#mainCore(_a: any)
     # TODO: prevent the function from doing anything if a line is already commented.
     # For example, if you press by accident `+dd` twice on the same line, it
     # shouldn't do anything the second time.
     sil norm! '[y']
     :'[,']CommentToggle
     # comment#toggle#main(line("'["), line("']"))
-    sil exe ":'[,']s/^\\s*\\V"
+    sil exe ":'[,']" .. 's/^\s*'
+        .. '\V'
         .. comment#util#getCml()[0]->matchstr('\S*')->escape('\/')
-        .. '\m\zs/    /'
+        .. '\m'
+        .. '\zs/    /'
     norm! `]]p
 enddef
 

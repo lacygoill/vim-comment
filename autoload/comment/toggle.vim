@@ -89,7 +89,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
                 m[0]->str2nr() - uncomment + 1 <= 0
                     ? ''
                     : m[0]->str2nr() - uncomment + 1
-            line = substitute(line, pat, Rep, 'g')
+            line = line->substitute(pat, Rep, 'g')
         endif
 
         var pat: string
@@ -137,8 +137,8 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
             Rep = (m: list<string>): string => l .. m[0] .. r
         endif
 
-        line = substitute(line, pat, Rep, '')
-        setline(lnum, line)
+        line->substitute(pat, Rep, '')
+            ->setline(lnum)
     endfor
 
     # fire a custom event to allow us executing a callback after (un)commenting some text

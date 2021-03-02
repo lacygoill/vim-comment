@@ -16,23 +16,20 @@ def comment#util#getCml(): list<string> #{{{1
     #    - the beginning of a comment string; e.g. for vim:    `" `
     #    - the end of a comment string;       e.g. for html:   ` -->`
 
-    var cml: string = &l:cms
-
-    # make sure there's a space between the comment leader and the comment:
-    #         "%s   →   " %s
-    # more readable
-    cml = substitute(cml, '\S\zs\ze%s', ' ', '')
-
-    # make sure there's a space between the comment and the end-comment leader
-    #         <-- %s-->    →    <-- %s -->
-    cml = substitute(cml, '%s\zs\ze\S', ' ', '')
-
-    # return the comment leader, and the possible end-comment leader,
-    # through a list of 2 items
-    return split(cml, '%s', true)
-    #                       │
-    #                       └ always return 2 items, even if there's nothing
-    #                         after `%s` (in this case, the 2nd item will be '')
+    return &l:cms
+        # make sure there's a space between the comment leader and the comment:
+        #         "%s   →   " %s
+        # more readable
+        ->substitute('\S\zs\ze%s', ' ', '')
+        # make sure there's a space between the comment and the end-comment leader
+        #         <-- %s-->    →    <-- %s -->
+        ->substitute('%s\zs\ze\S', ' ', '')
+        # return the comment leader, and the possible end-comment leader,
+        # through a list of 2 items
+        ->split('%s', true)
+        #             │
+        #             └ always return 2 items, even if there's nothing
+        #               after `%s` (in this case, the 2nd item will be '')
 enddef
 
 def comment#util#maybeTrimCml(line: string, l_: string, r_: string): list<string> #{{{1

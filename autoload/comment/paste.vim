@@ -46,7 +46,7 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
             #
             #     var reginfo: dict<any> = getreginfo(v:register)
             #     var contents: list<string> = get(reginfo, 'regcontents', [])
-            #     map(contents, (_, v: string): string => substitute(v, '$', '\~', ''))
+            #         ->map((_, v: string): string => v->substitute('$', '\~', ''))
             #     deepcopy(reginfo)
             #         ->extend({regcontents: contents, regtype: 'l'})
             #         ->setreg(v:register)
@@ -116,9 +116,11 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
         # single mapping.
         #}}}
         if how_to_indent == '>'
-            #                                                      ┌ don't add trailing whitespace on an empty commented line
-            #                                                      ├─────┐
-            var pat: string = '^\s*\V' .. escape(l, '\/') .. '\m\zs\ze.*\S'
+            var pat: string = '^\s*'
+                .. '\V' .. escape(l, '\/')
+                .. '\m' .. '\zs\ze.*\S'
+                #              ├─────┘
+                #              └ don't add trailing whitespace on an empty commented line
             var rep: string = repeat(' ', &l:sw * cnt)
             sil exe 'keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
         endif

@@ -11,7 +11,7 @@ enddef
 
 var half_to_comment: string
 #}}}1
-def comment#half#do(_: any) #{{{1
+def comment#half#do(_a: any) #{{{1
     var half: string = half_to_comment
     var first_lnum: number = line("'{") + 1
     var last_lnum: number = line("'}") - 1
