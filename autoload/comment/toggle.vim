@@ -98,7 +98,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
         if uncomment != 0
             pat = '\S.*\s\@1<!'
             Rep = (m: list<string>): string =>
-                m[0][strchars(l, true) : -1 - strchars(r, true)]
+                m[0][strchars(l) : -1 - strchars(r)]
         else
             pat = '^\%(' .. indent .. '\|\s*\)\zs.*'
             # Why?{{{
