@@ -68,20 +68,20 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
         #     <!-- <1!-- hello world --1> -->               comment in a comment
         #     <!-- <1!-- <2!-- hello world --2> --1> -->    comment in a comment in a comment
 
-        #                    ┌ the end-comment leader should have at least 2 characters:{{{
-        #                    │         -->
-        #                    │ ... otherwise the incrementation/decrementation could affect
-        #                    │ numbers inside the comment text, which are not concerned:
-        #                    │
-        #                    │         r = 'x'
-        #                    │         right_number = r[: -2] .. '\zs\d\+\ze' .. r[-1]
-        #                    │                      = '\zs\d\+\zex'
-        #                    │ }}}
-        if strchars(r, true) >= 2 && l .. r !~ '\\'
-        #                                       │
-        #                                       └ No matter the magicness of a pattern, a backslash
-        #                                         has always a special meaning.  So, we make sure
-        #                                         that there's none in the comment leader.
+        #                ┌ the end-comment leader should have at least 2 characters:{{{
+        #                │         -->
+        #                │ ... otherwise the incrementation/decrementation could affect
+        #                │ numbers inside the comment text, which are not concerned:
+        #                │
+        #                │         r = 'x'
+        #                │         right_number = r[: -2] .. '\zs\d\+\ze' .. r[-1]
+        #                │                      = '\zs\d\+\zex'
+        #                │ }}}
+        if strcharlen(r) >= 2 && l .. r !~ '\\'
+        #                                   │
+        #                                   └ No matter the magicness of a pattern, a backslash
+        #                                     has always a special meaning.  So, we make sure
+        #                                     that there's none in the comment leader.
 
             var left_number: string = l[0] .. '\zs\d\*\ze' .. l[1 :]
             var right_number: string = r[: -2] .. '\zs\d\*\ze' .. r[-1]
@@ -98,7 +98,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
         if uncomment != 0
             pat = '\S.*\s\@1<!'
             Rep = (m: list<string>): string =>
-                m[0][strchars(l) : -1 - strchars(r)]
+                m[0][strcharlen(l) : -1 - strcharlen(r)]
         else
             pat = '^\%(' .. indent .. '\|\s*\)\zs.*'
             # Why?{{{

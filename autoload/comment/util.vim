@@ -62,8 +62,8 @@ def comment#util#isCommented(arg_line: string, l: string, r: string): bool #{{{1
 
     #      ┌ the line begins with the comment leader
     #      ├────────────────────┐
-    return stridx(line, l) == 0 && line[strchars(line) - strchars(r) :] == r
-    #                              └──────────────────────────────────┤
-    #                        it also ends with the end-comment leader ┘
+    return stridx(line, l) == 0 && line[strcharlen(line) - strcharlen(r) :] == r
+    #                              └──────────────────────────────────────┤
+    #                            it also ends with the end-comment leader ┘
 enddef
 
