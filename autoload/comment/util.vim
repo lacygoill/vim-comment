@@ -32,9 +32,14 @@ def comment#util#getCml(): list<string> #{{{1
         #               after `%s` (in this case, the 2nd item will be '')
 enddef
 
-def comment#util#maybeTrimCml(line: string, l_: string, r_: string): list<string> #{{{1
-    var l: string = trim(l_, ' ', 2)
-    var r: string = trim(r_, ' ', 1)
+def comment#util#maybeTrimCml( #{{{1
+    line: string,
+    l_: string,
+    r_: string
+): list<string>
+
+    var l: string = l_->trim(' ', 2)
+    var r: string = r_->trim(' ', 1)
 
     # if the  line is commented with  the trimmed comment leaders,  but not with
     # the space-padded ones, return the trimmed ones
@@ -45,7 +50,7 @@ def comment#util#maybeTrimCml(line: string, l_: string, r_: string): list<string
     # don't break `:h line-continuation-comment` when commenting a line starting
     # with a backslash (i.e. don't insert a space between the comment leader and
     # the backslash)
-    if &ft == 'vim' && line =~ '^\s*\\ ' && !IsVim9()
+    if &ft == 'vim' && line =~ '^\s*\\ ' && l_ =~ '"'
         return ['"', '']
     endif
 
@@ -53,7 +58,11 @@ def comment#util#maybeTrimCml(line: string, l_: string, r_: string): list<string
     return [l_, r_]
 enddef
 
-def comment#util#isCommented(arg_line: string, l: string, r: string): bool #{{{1
+def comment#util#isCommented( #{{{1
+    arg_line: string,
+    l: string,
+    r: string
+): bool
     #                                      ┌ trim beginning whitespace
     #                                      │
     var line: string = matchstr(arg_line, '\S.*\s\@1<!')

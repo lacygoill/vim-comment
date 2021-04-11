@@ -152,7 +152,13 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
 enddef
 #}}}1
 # Core {{{1
-def DoWeUncomment(lnum1: number, lnum2: number, l_: string, r_: string): number
+def DoWeUncomment(
+    lnum1: number,
+    lnum2: number,
+    l_: string,
+    r_: string
+): number
+
     # by default, let's assume we want to uncomment
     # Why 2 instead of 1?{{{
     #

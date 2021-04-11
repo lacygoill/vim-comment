@@ -11,7 +11,7 @@ enddef
 
 var half_to_comment: string
 #}}}1
-def comment#half#do(_a: any) #{{{1
+def comment#half#do(_) #{{{1
     var half: string = half_to_comment
     var first_lnum: number = line("'{") + 1
     var last_lnum: number = line("'}") - 1
@@ -28,7 +28,7 @@ def comment#half#do(_a: any) #{{{1
         [lnum1, lnum2] = [
             first_lnum,
             first_lnum + diff / 2 - (diff % 2 == 0 ? 1 : 0)
-            ]
+        ]
     else
         [lnum1, lnum2] = [last_lnum - diff / 2 + 1, last_lnum]
     endif

@@ -46,7 +46,6 @@ def comment#motion#main(is_fwd = true): string #{{{2
 
     # don't remove the `W` flag; I like knowing when I've reached the last/first comment
     var res: list<number> = searchpos(pat, (is_fwd ? '' : 'b') .. 'W')
-    # we need `virtcol()` to handle a possible leading tab character
     var lnum: number = line('.')
     var vcol: number = virtcol('.')
     if res != [0, 0]

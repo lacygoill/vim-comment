@@ -12,7 +12,7 @@ def comment#duplicate#main(): string #{{{1
     return 'g@'
 enddef
 
-def comment#duplicate#mainCore(_a: any)
+def comment#duplicate#mainCore(_)
     # TODO: prevent the function from doing anything if a line is already commented.
     # For example, if you press by accident `+dd` twice on the same line, it
     # shouldn't do anything the second time.
