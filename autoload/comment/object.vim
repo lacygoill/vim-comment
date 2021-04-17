@@ -22,10 +22,11 @@ def comment#object#main(op_is_c = false) #{{{1
         var l: string
         var r: string
         [l, r] = getline('.')->comment#util#maybeTrimCml(l_, r_)
-        while comment#util#isCommented(next_line, l, r)
+        var nl: string = next_line
+        while comment#util#isCommented(nl, l, r)
             # stop if the boundary has reached the beginning/end of a fold
             var fmr: string = split(&l:fmr, ',')->join('\|')
-            if match(next_line, fmr) >= 0
+            if match(nl, fmr) >= 0
                 break
             endif
 
@@ -33,8 +34,8 @@ def comment#object#main(op_is_c = false) #{{{1
             boundaries[which] += dir
 
             # update `line`, `l`, `r` before next test
-            next_line = getline(boundaries[which] + dir)
-            [l, r] = comment#util#maybeTrimCml(next_line, l_, r_)
+            nl = getline(boundaries[which] + dir)
+            [l, r] = comment#util#maybeTrimCml(nl, l_, r_)
         endwhile
     endfor
 
