@@ -55,14 +55,14 @@ def comment#object#main(op_is_c = false) #{{{1
         # make sure there's no empty lines at the *start* of the object
         # by incrementing the upper boundary as long as necessary
         while getline(boundaries[0]) !~ '\S'
-            boundaries[0] += 1
+            ++boundaries[0]
         endwhile
     endif
 
     if op_is_c
         # make sure there are no empty lines at the *end* of the object
         while getline(boundaries[1]) !~ '\S'
-            boundaries[1] -= 1
+            --boundaries[1]
         endwhile
     endif
 

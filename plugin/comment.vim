@@ -38,17 +38,17 @@ xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
 #
 # Press `gV` or `g C-v` (custom mappings installed from our vimrc).
 #}}}
-nno cp <cmd>call comment#paste#main(']', '')<cr>
-nno cP <cmd>call comment#paste#main('[', '')<cr>
+nno <expr><unique> cp comment#paste#setup(']', '')
+nno <expr><unique> cP comment#paste#setup('[', '')
 
-nno <cp <cmd>call comment#paste#main(']', '<')<cr>
-nno <cP <cmd>call comment#paste#main('[', '<')<cr>
+nno <expr><unique> <cp comment#paste#setup(']', '<')
+nno <expr><unique> <cP comment#paste#setup('[', '<')
 
-nno >cp <cmd>call comment#paste#main(']', '>')<cr>
-nno >cP <cmd>call comment#paste#main('[', '>')<cr>
+nno <expr><unique> >cp comment#paste#setup(']', '>')
+nno <expr><unique> >cP comment#paste#setup('[', '>')
 
-nno =cp <cmd>call comment#paste#main(']', '=')<cr>
-nno =cP <cmd>call comment#paste#main('[', '=')<cr>
+nno <expr><unique> =cp comment#paste#setup(']', '=')
+nno <expr><unique> =cP comment#paste#setup('[', '=')
 
 # duplicate code {{{2
 

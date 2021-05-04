@@ -16,7 +16,7 @@ def comment#util#getCml(): list<string> #{{{1
     #    - the beginning of a comment string; e.g. for vim:    `" `
     #    - the end of a comment string;       e.g. for html:   ` -->`
 
-    return &l:cms
+    return &cms
         # make sure there's a space between the comment leader and the comment:
         #         "%s   →   " %s
         # more readable
@@ -50,7 +50,7 @@ def comment#util#maybeTrimCml( #{{{1
     # don't break `:h line-continuation-comment` when commenting a line starting
     # with a backslash (i.e. don't insert a space between the comment leader and
     # the backslash)
-    if &ft == 'vim' && line =~ '^\s*\\ ' && l_ =~ '"'
+    if &filetype == 'vim' && line =~ '^\s*\\ ' && l_ =~ '"'
         return ['"', '']
     endif
 
@@ -65,13 +65,13 @@ def comment#util#isCommented( #{{{1
 ): bool
     #                                      ┌ trim beginning whitespace
     #                                      │
-    var line: string = matchstr(arg_line, '\S.*\s\@1<!')
-    #                                            ├─────┘
-    #                                            └ trim ending whitespace
+    var line: string = arg_line->matchstr('\S.*\s\@1<!')
+    #                                          ├─────┘
+    #                                          └ trim ending whitespace
 
     #      ┌ the line begins with the comment leader
-    #      ├────────────────────┐
-    return stridx(line, l) == 0 && line[strcharlen(line) - strcharlen(r) :] == r
+    #      ├──────────────────┐
+    return line->stridx(l) == 0 && line[strcharlen(line) - strcharlen(r) :] == r
     #                              └──────────────────────────────────────┤
     #                            it also ends with the end-comment leader ┘
 enddef

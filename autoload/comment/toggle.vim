@@ -4,28 +4,28 @@ if exists('loaded') | finish | endif
 var loaded = true
 
 # Interface {{{1
-def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
-    if typename(arg_type) == 'string' && arg_type == ''
+def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
+    if empty(&l:cms)
+        return ''
+    endif
+
+    if typename(argone) == 'string' && argone == ''
         &opfunc = 'comment#toggle#main'
         return 'g@'
     endif
 
     var type: string
-    if arg_lnum2 == 0
-        type = arg_type
+    if argtwo == 0
+        type = argone
     else
         type = 'Ex'
-    endif
-
-    if empty(&l:cms)
-        return ''
     endif
 
     # Define the range of lines to (un)comment.
     var lnum1: number
     var lnum2: number
     if type == 'Ex'
-        [lnum1, lnum2] = [arg_type, arg_lnum2]
+        [lnum1, lnum2] = [argone, argtwo]
     else
         [lnum1, lnum2] = [line("'["), line("']")]
     endif
@@ -36,7 +36,7 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
     var r_: string
     [l_, r_] = comment#util#getCml()
 
-    var uncomment: number = DoWeUncomment(lnum1, lnum2, l_, r_)
+    var uncomment: bool = DoWeUncomment(lnum1, lnum2, l_, r_)
 
     # Why do you get the indent of first line?{{{
     #
@@ -49,11 +49,13 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
     #}}}
     var indent: string = getline(lnum1)->matchstr('^\s*')
 
+    var new_lines: list<string>
     for lnum in range(lnum1, lnum2)
         var line: string = getline(lnum)
 
-        # Don't do anything if the line is empty.
+        # don't change anything if the line is empty
         if line !~ '\S'
+            new_lines->add(line)
             continue
         endif
 
@@ -61,21 +63,22 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
         var r: string
         [l, r] = comment#util#maybeTrimCml(line, l_, r_)
 
-        # Add support for nested comments.
+        # Support nested comments.{{{
+        #
         # Example: In an html file:
         #
         #     <!-- hello world -->                          comment
         #     <!-- <1!-- hello world --1> -->               comment in a comment
         #     <!-- <1!-- <2!-- hello world --2> --1> -->    comment in a comment in a comment
-
+        #}}}
         #                ┌ the end-comment leader should have at least 2 characters:{{{
         #                │         -->
         #                │ ... otherwise the incrementation/decrementation could affect
         #                │ numbers inside the comment text, which are not concerned:
         #                │
         #                │         r = 'x'
-        #                │         right_number = r[: -2] .. '\zs\d\+\ze' .. r[-1]
-        #                │                      = '\zs\d\+\zex'
+        #                │         right_number = r[: -2] .. '\zs\d\*\ze' .. r[-1]
+        #                │                      = '\zs\d\*\zex'
         #                │ }}}
         if strcharlen(r) >= 2 && l .. r !~ '\\'
         #                                   │
@@ -83,19 +86,19 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
         #                                     has always a special meaning.  So, we make sure
         #                                     that there's none in the comment leader.
 
-            var left_number: string = l[0] .. '\zs\d\*\ze' .. l[1 :]
-            var right_number: string = r[: -2] .. '\zs\d\*\ze' .. r[-1]
+            var left_number: string = l->substitute('\ze\S\s*$', '\\zs\\d\\*\\ze', '')
+            var right_number: string = r->substitute('\S\zs', '\\zs\\d\\*\\ze', '')
             var pat: string = '\V' .. left_number .. '\|' .. right_number
             var Rep: func = (m: list<string>): string =>
-                m[0]->str2nr() - uncomment + 1 <= 0
+                m[0]->str2nr() + (uncomment ? -1 : 1) <= 0
                     ? ''
-                    : (m[0]->str2nr() - uncomment + 1)->string()
+                    : (m[0]->str2nr() + (uncomment ? -1 : 1))->string()
             line = line->substitute(pat, Rep, 'g')
         endif
 
         var pat: string
         var Rep: func
-        if uncomment != 0
+        if uncomment
             pat = '\S.*\s\@1<!'
             Rep = (m: list<string>): string =>
                 m[0][strcharlen(l) : -1 - strcharlen(r)]
@@ -139,9 +142,10 @@ def comment#toggle#main(arg_type: any = '', arg_lnum2 = 0): string #{{{2
             Rep = (m: list<string>): string => l .. m[0] .. r
         endif
 
-        line->substitute(pat, Rep, '')
-            ->setline(lnum)
+        new_lines->add(line->substitute(pat, Rep, ''))
     endfor
+    # `setline()` is kept outside the loop for better performance
+    new_lines->setline(lnum1)
 
     # fire a custom event to allow us executing a callback after (un)commenting some text
     if exists('#User#CommentTogglePost')
@@ -157,19 +161,8 @@ def DoWeUncomment(
     lnum2: number,
     l_: string,
     r_: string
-): number
+): bool
 
-    # by default, let's assume we want to uncomment
-    # Why 2 instead of 1?{{{
-    #
-    # Nested comments use numbers to express the level of imbrication.
-    # 2 is a convenient value to compute a decremented level:
-    #
-    #     var new_lvl: number = old_lvl - uncomment + 1
-    #                                     │
-    #                                     └ should be 2 for `new_lvl` to be correct
-    #}}}
-    var uncomment: number = 2
     for lnum in range(lnum1, lnum2)
         var line: string = getline(lnum)
         # if needed for the current line, trim the comment leader
@@ -178,9 +171,9 @@ def DoWeUncomment(
         [l, r] = comment#util#maybeTrimCml(line, l_, r_)
         # to comment a range of lines, one of them must be non-empty and non-commented
         if line =~ '\S' && !comment#util#isCommented(line, l, r)
-            uncomment = 0
+            return false
         endif
     endfor
-    return uncomment
+    return true
 enddef
 

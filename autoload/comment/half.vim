@@ -3,15 +3,17 @@ vim9script noclear
 if exists('loaded') | finish | endif
 var loaded = true
 
-def comment#half#setup(dir: string): string #{{{1
+var half_to_comment: string
+
+# Interface {{{1
+def comment#half#setup(dir: string): string #{{{2
     half_to_comment = dir
-    &opfunc = 'comment#half#do'
+    &opfunc = expand('<SID>') .. 'Do'
     return 'g@l'
 enddef
-
-var half_to_comment: string
 #}}}1
-def comment#half#do(_) #{{{1
+# Core {{{1
+def Do(_) #{{{2
     var half: string = half_to_comment
     var first_lnum: number = line("'{") + 1
     var last_lnum: number = line("'}") - 1

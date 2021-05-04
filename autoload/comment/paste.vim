@@ -3,8 +3,21 @@ vim9script noclear
 if exists('loaded') | finish | endif
 var loaded = true
 
+# Declarations {{{1
+
+var where: string
+var how_to_indent: string
+
 # Interface {{{1
-def comment#paste#main(where: string, how_to_indent: string) #{{{2
+def comment#paste#setup(arg_where: string, how: string): string #{{{2
+    where = arg_where
+    how_to_indent = how
+    &opfunc = expand('<SID>') .. 'Do'
+    return 'g@l'
+enddef
+#}}}1
+# Core {{{1
+def Do(_) #{{{2
     var cnt: number = v:count1
     var view: dict<number> = winsaveview()
     # you can get a weird result if you paste some text containing a fold marker;
@@ -16,9 +29,9 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
     var change_pos: list<number>
     # In a markdown file, there're no comments.
     # However, it could still be useful to format the text as code output or quote.
-    if &ft == 'markdown'
+    if &filetype == 'markdown'
         var is_quote: bool = indent('.') == 0
-        Paste(where)
+        Paste()
         change_pos = getpos("'[")
         start = line("'[")
         end = line("']")
@@ -52,7 +65,7 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
             #         ->setreg(v:register)
             #
             #     ...
-            #     Paste(where)
+            #     Paste()
             #     ...
             #     setreg(v:register, reginfo)
             #}}}
@@ -88,14 +101,14 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
     else
         var l: string
         var r: string
-        if &l:cms != ''
+        if &cms != ''
             [l, r] = comment#util#getCml()
-            l = matchstr(l, '\S*')
+            l = l->matchstr('\S*')
         else
             l = ''
         endif
 
-        Paste(where)
+        Paste()
         change_pos = getpos("'[")
 
         # some of the next commands may alter the change marks; save them now
@@ -105,11 +118,7 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
         # comment
         exe range .. 'CommentToggle'
         # I don't like empty non-commented line in "the middle of a multi-line comment.
-        sil exe 'keepj keepp ' .. range .. 'g/^$/'
-            .. 'exe "norm! i\<c-v>\<c-a>"'
-            .. ' | CommentToggle'
-            .. ' | exe "norm! =="'
-            .. ' | s/\s*\%x01//e'
+        exe 'sil keepj keepp ' .. range .. 'g/^$/CommentEmptyLine()'
         # If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         #
         # This lets us  paste some code and  highlight it as a  codeblock in one
@@ -121,8 +130,18 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
                 .. '\m' .. '\zs\ze.*\S'
                 #              ├─────┘
                 #              └ don't add trailing whitespace on an empty commented line
-            var rep: string = repeat(' ', &l:sw * cnt)
-            sil exe 'keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
+            # Do *not* replace `4` with `&l:sw`.{{{
+            #
+            # We often press `>cp` on a comment codeblock.
+            # Those are always  indented with 4 spaces after  the comment leader
+            # (and the space which always needs to follow for readability).
+            #
+            # And when we do, we usually expect the pasted line to become a part
+            # of the  codeblock.  That wouldn't  happen if we wrote  `&l:sw` and
+            # the latter was not 4 (e.g. it could be 2).
+            #}}}
+            var rep: string = repeat(' ', 4 * cnt)
+            exe 'sil keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
         endif
     endif
     if how_to_indent != '' && how_to_indent != '>'
@@ -133,21 +152,20 @@ def comment#paste#main(where: string, how_to_indent: string) #{{{2
     setpos('.', change_pos)
     search('\S', 'cW')
 enddef
-#}}}1
-# Core {{{1
-def Paste(where: string) #{{{2
-    # Do *not* remove the bang.{{{
-    #
-    # We have a custom mapping which replaces `""` with `"+`.
-    # We use it because it's convenient in an interactive usage (easier to type).
-    # But we don't want it to interfere here (we're in a script now).
-    #}}}
-    exe 'norm! "' .. v:register
-    # Do *not* add a bang.{{{
-    #
-    # We need our custom `]p` to be pressed so that the the text is pasted as if
-    # it was linewise, even if in reality it's characterwise.
-    #}}}
-    exe 'norm ' .. where .. 'p'
+
+def Paste() #{{{2
+    # Make sure the next `]p` command puts  the text as if it was linewise, even
+    # if in reality it's characterwise.
+    getreginfo(v:register)
+        ->extend({regtype: 'l'})
+        ->setreg(v:register)
+    exe 'norm! "' .. v:register .. where .. 'p'
+enddef
+
+def CommentEmptyLine() #{{{2
+    exe "norm! i\<c-v>\<c-a>"
+    CommentToggle
+    norm! ==
+    s/\s*\%x01//e
 enddef
 

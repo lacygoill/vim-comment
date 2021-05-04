@@ -8,7 +8,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
     # This function positions the cursor on the next/previous beginning of a comment.
     # Inspiration: $VIMRUNTIME/ftplugin/vim.vim
 
-    if empty(&l:cms)
+    if empty(&cms)
         return ''
     endif
 
@@ -70,21 +70,21 @@ enddef
 # Util {{{1
 def GetSearchPat(): string #{{{2
     var l: string
-    if &ft == 'vim'
+    if &filetype == 'vim'
         l = '["#]'
     else
-        var cml: list<string> = split(&l:cms, '%s')
-        l = '\V' .. matchstr(cml[0], '\S\+')->escape('\') .. '\m'
+        var cml: list<string> = &cms->split('%s')
+        l = '\V' .. cml[0]->matchstr('\S\+')->escape('\') .. '\m'
     endif
 
     # We're looking for a commented line of text.
     # It must begin a fold.
     # Or the line before must not be commented.
-    #
-    #                  ┌ no commented line just before
-    #                  │                            ┌ a commented line of text
-    #                  ├───────────────────────────┐├──────────┐
-    var pat: string = '^\%(^\s*' .. l .. '.*\n\)\@<!\s*\zs' .. l
+    var pat: string =
+        # no commented line just before
+        '^\%(^\s*' .. l .. '.*\n\)\@<!'
+        # a commented line of text
+        .. '\s*\zs' .. l
         .. '\|^\s*\zs' .. l .. '.*{{' .. '{'
     return pat
 enddef
