@@ -45,7 +45,7 @@ def Do(_) #{{{2
             #     var bufnr: number
             #     try
             #         setl nowrap
-            #         exe "norm! '[V']\<c-v>0o$A~"
+            #         exe "norm! '[V']\<c-v>0o$A˜"
             #     finally
             #         if winbufnr(winid) == bufnr
             #             var tabnr: number
@@ -59,7 +59,7 @@ def Do(_) #{{{2
             #
             #     var reginfo: dict<any> = getreginfo(v:register)
             #     var contents: list<string> = get(reginfo, 'regcontents', [])
-            #         ->map((_, v: string): string => v->substitute('$', '\~', ''))
+            #         ->map((_, v: string): string => v->substitute('$', '˜', ''))
             #     deepcopy(reginfo)
             #         ->extend({regcontents: contents, regtype: 'l'})
             #         ->setreg(v:register)
@@ -70,7 +70,7 @@ def Do(_) #{{{2
             #     setreg(v:register, reginfo)
             #}}}
 
-            # Do *not* use this `norm! '[V']A~`!{{{
+            # Do *not* use this `norm! '[V']A˜`!{{{
             #
             # This sequence  of keys works  in an interactive usage,  because of
             # our custom  mapping `x_A`, but  it would fail with  `:norm!` (note
@@ -78,25 +78,25 @@ def Do(_) #{{{2
             # It  would probably  work with  `:norm` though,  although it  would
             # still fail on a long wrapped line (see next comment).
             #}}}
-            #     nor this `exe "norm! '[V']\<c-v>0o$A~"`!{{{
+            #     nor this `exe "norm! '[V']\<c-v>0o$A˜"`!{{{
             #
             # This is better, because it doesn't rely on any custom mapping.
             #
             # But, it would still fail on a long line wrapped onto more than one
-            # screen line; that is, `~` would not be appended at the very end of
+            # screen line; that is, `˜` would not be appended at the very end of
             # the line, but a few characters  before; the more screen lines, the
             # more characters before the end.
             #
             # MWE:
             #
-            #     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A~"'
+            #     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A˜"'
             #
             # The explanation of this behavior may be given at `:h v_b_A`.
             # Anyway, with a long wrapped line,  it's possible that the block is
             # defined in a weird way.
             #}}}
-            sil keepj keepp :'[,']g/^/norm! A~
-            sil keepj keepp :'[,']g/^\~$/s/\~//
+            sil keepj keepp :'[,']g/^/norm! A˜
+            sil keepj keepp :'[,']g/^˜$/s/˜//
         endif
     else
         var l: string
