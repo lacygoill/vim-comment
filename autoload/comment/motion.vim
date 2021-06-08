@@ -8,7 +8,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
     # This function positions the cursor on the next/previous beginning of a comment.
     # Inspiration: $VIMRUNTIME/ftplugin/vim.vim
 
-    if empty(&cms)
+    if empty(&commentstring)
         return ''
     endif
 
@@ -73,7 +73,7 @@ def GetSearchPat(): string #{{{2
     if &filetype == 'vim'
         l = '["#]'
     else
-        var cml: list<string> = &cms->split('%s')
+        var cml: list<string> = &commentstring->split('%s')
         l = '\V' .. cml[0]->matchstr('\S\+')->escape('\') .. '\m'
     endif
 

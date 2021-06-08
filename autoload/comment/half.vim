@@ -8,7 +8,7 @@ var half_to_comment: string
 # Interface {{{1
 def comment#half#setup(dir: string): string #{{{2
     half_to_comment = dir
-    &opfunc = expand('<SID>') .. 'Do'
+    &operatorfunc = expand('<SID>') .. 'Do'
     return 'g@l'
 enddef
 #}}}1

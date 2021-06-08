@@ -4,7 +4,7 @@ if exists('loaded') | finish | endif
 var loaded = true
 
 def comment#object#main(op_is_c = false) #{{{1
-    if &l:cms == ''
+    if &l:commentstring == ''
         return
     endif
 
@@ -17,7 +17,7 @@ def comment#object#main(op_is_c = false) #{{{1
     #       │
     for  [which, dir, limit, next_line]
     in  [[0, -1, 1, getline('.')],
-    [1, 1, line('$'), getline('.')]]
+         [1, 1, line('$'), getline('.')]]
 
         var l: string
         var r: string
@@ -25,8 +25,8 @@ def comment#object#main(op_is_c = false) #{{{1
         var nl: string = next_line
         while comment#util#isCommented(nl, l, r)
             # stop if the boundary has reached the beginning/end of a fold
-            var fmr: string = split(&l:fmr, ',')->join('\|')
-            if match(nl, fmr) >= 0
+            var foldmarker: string = split(&l:foldmarker, ',')->join('\|')
+            if match(nl, foldmarker) >= 0
                 break
             endif
 

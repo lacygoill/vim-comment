@@ -16,7 +16,7 @@ def comment#util#getCml(): list<string> #{{{1
     #    - the beginning of a comment string; e.g. for vim:    `" `
     #    - the end of a comment string;       e.g. for html:   ` -->`
 
-    return &cms
+    return &commentstring
         # make sure there's a space between the comment leader and the comment:
         #         "%s   →   " %s
         # more readable

@@ -5,12 +5,12 @@ var loaded = true
 
 # Interface {{{1
 def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
-    if empty(&l:cms)
+    if empty(&l:commentstring)
         return ''
     endif
 
     if typename(argone) == 'string' && argone == ''
-        &opfunc = 'comment#toggle#main'
+        &operatorfunc = 'comment#toggle#main'
         return 'g@'
     endif
 

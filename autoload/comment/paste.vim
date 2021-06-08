@@ -12,7 +12,7 @@ var how_to_indent: string
 def comment#paste#setup(arg_where: string, how: string): string #{{{2
     where = arg_where
     how_to_indent = how
-    &opfunc = expand('<SID>') .. 'Do'
+    &operatorfunc = expand('<SID>') .. 'Do'
     return 'g@l'
 enddef
 #}}}1
@@ -22,7 +22,7 @@ def Do(_) #{{{2
     var view: dict<number> = winsaveview()
     # you can get a weird result if you paste some text containing a fold marker;
     # let's disable folding temporarily, to avoid any interference
-    var fen_save: bool = &l:fen | setl nofen
+    var foldenable_save: bool = &l:foldenable | &l:foldenable = false
 
     var start: number
     var end: number
@@ -44,7 +44,7 @@ def Do(_) #{{{2
             #     var winid: number
             #     var bufnr: number
             #     try
-            #         setl nowrap
+            #         &l:wrap = false
             #         exe "norm! '[V']\<c-v>0o$A˜"
             #     finally
             #         if winbufnr(winid) == bufnr
@@ -101,7 +101,7 @@ def Do(_) #{{{2
     else
         var l: string
         var r: string
-        if &cms != ''
+        if &commentstring != ''
             [l, r] = comment#util#getCml()
             l = l->matchstr('\S*')
         else
@@ -130,15 +130,15 @@ def Do(_) #{{{2
                 .. '\m' .. '\zs\ze.*\S'
                 #              ├─────┘
                 #              └ don't add trailing whitespace on an empty commented line
-            # Do *not* replace `4` with `&l:sw`.{{{
+            # Do *not* replace `4` with `&l:shiftwidth`.{{{
             #
             # We often press `>cp` on a comment codeblock.
             # Those are always  indented with 4 spaces after  the comment leader
             # (and the space which always needs to follow for readability).
             #
-            # And when we do, we usually expect the pasted line to become a part
-            # of the  codeblock.  That wouldn't  happen if we wrote  `&l:sw` and
-            # the latter was not 4 (e.g. it could be 2).
+            # And  when we  do,  we usually  expect the  pasted  line to  become
+            # a  part  of the  codeblock.   That  wouldn't  happen if  we  wrote
+            # `&l:shiftwidth` and the latter was not 4 (e.g. it could be 2).
             #}}}
             var rep: string = repeat(' ', 4 * cnt)
             exe 'sil keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
@@ -147,7 +147,7 @@ def Do(_) #{{{2
     if how_to_indent != '' && how_to_indent != '>'
         exe 'norm! ' .. start .. 'G' .. how_to_indent .. end .. 'G'
     endif
-    &l:fen = fen_save
+    &l:foldenable = foldenable_save
     winrestview(view)
     setpos('.', change_pos)
     search('\S', 'cW')

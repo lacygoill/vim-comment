@@ -7,8 +7,8 @@ import Opfunc from 'lg.vim'
 const SID: string = execute('fu Opfunc')->matchstr('\C\<def\s\+\zs<SNR>\d\+_')
 
 def comment#duplicate#main(): string #{{{1
-    &opfunc = SID .. 'Opfunc'
-    g:opfunc = {core: Core}
+    &operatorfunc = SID .. 'Opfunc'
+    g:operatorfunc = {core: Core}
     return 'g@'
 enddef
 
