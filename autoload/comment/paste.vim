@@ -36,7 +36,7 @@ def Do(_) #{{{2
         start = line("'[")
         end = line("']")
         if is_quote
-            :'[,']CommentToggle
+            :'[,'] CommentToggle
         else
             # Which alternatives could I use?{{{
             #
@@ -95,8 +95,8 @@ def Do(_) #{{{2
             # Anyway, with a long wrapped line,  it's possible that the block is
             # defined in a weird way.
             #}}}
-            sil keepj keepp :'[,']g/^/norm! A˜
-            sil keepj keepp :'[,']g/^˜$/s/˜//
+            sil keepj keepp :'[,'] g/^/norm! A˜
+            sil keepj keepp :'[,'] g/^˜$/s/˜//
         endif
     else
         var l: string

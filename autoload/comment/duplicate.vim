@@ -17,8 +17,8 @@ def Core(_)
     # For example, if you press by accident `+dd` twice on the same line, it
     # shouldn't do anything the second time.
     sil norm! '[y']
-    :'[,']CommentToggle
-    exe "sil :'[,']" .. 's/^\s*'
+    :'[,'] CommentToggle
+    exe "sil :'[,']" .. ' s/^\s*'
         .. '\V'
         .. comment#util#getCml()[0]->matchstr('\S*')->escape('\/')
         .. '\m'
