@@ -5,17 +5,17 @@ var loaded = true
 
 # Commands {{{1
 
-com -range -bar CommentToggle comment#toggle#main(<line1>, <line2>)
+command -range -bar CommentToggle comment#toggle#main(<line1>, <line2>)
 
 # Mappings {{{1
 # toggle {{{2
 
-nno <expr><unique> gc comment#toggle#main()
-xno <expr><unique> gc comment#toggle#main()
-nno <expr><unique> gcc comment#toggle#main() .. '_'
+nnoremap <expr><unique> gc comment#toggle#main()
+xnoremap <expr><unique> gc comment#toggle#main()
+nnoremap <expr><unique> gcc comment#toggle#main() .. '_'
 
-ono <unique> ic <cmd>call comment#object#main(v:operator ==# 'c')<cr>
-xno <unique> ic <c-\><c-n><cmd>call comment#object#main()<cr>
+onoremap <unique> ic <Cmd>call comment#object#main(v:operator ==# 'c')<CR>
+xnoremap <unique> ic <C-\><C-N><Cmd>call comment#object#main()<CR>
 
 # Why not just `gcic` in the rhs?{{{
 #
@@ -24,8 +24,8 @@ xno <unique> ic <c-\><c-n><cmd>call comment#object#main()<cr>
 # That's not what  we want; if there's  no commented line where we  are, then we
 # don't want anything to happen.
 #}}}
-nmap <unique> gcu vic<plug>(uncomment-selection)
-xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
+nmap <unique> gcu vic<Plug>(uncomment-selection)
+xmap <expr> <Plug>(uncomment-selection) mode() =~# '^[vV<C-V>]$' ? 'gc' : ''
 
 # paste and comment {{{2
 
@@ -38,30 +38,30 @@ xmap <expr> <plug>(uncomment-selection) mode() =~# '^[vV<c-v>]$' ? 'gc' : ''
 #
 # Press `gV` or `g C-v` (custom mappings installed from our vimrc).
 #}}}
-nno <expr><unique> cp comment#paste#setup(']', '')
-nno <expr><unique> cP comment#paste#setup('[', '')
+nnoremap <expr><unique> cp comment#paste#setup(']', '')
+nnoremap <expr><unique> cP comment#paste#setup('[', '')
 
-nno <expr><unique> <cp comment#paste#setup(']', '<')
-nno <expr><unique> <cP comment#paste#setup('[', '<')
+nnoremap <expr><unique> <cp comment#paste#setup(']', '<')
+nnoremap <expr><unique> <cP comment#paste#setup('[', '<')
 
-nno <expr><unique> >cp comment#paste#setup(']', '>')
-nno <expr><unique> >cP comment#paste#setup('[', '>')
+nnoremap <expr><unique> >cp comment#paste#setup(']', '>')
+nnoremap <expr><unique> >cP comment#paste#setup('[', '>')
 
-nno <expr><unique> =cp comment#paste#setup(']', '=')
-nno <expr><unique> =cP comment#paste#setup('[', '=')
+nnoremap <expr><unique> =cp comment#paste#setup(']', '=')
+nnoremap <expr><unique> =cP comment#paste#setup('[', '=')
 
 # duplicate code {{{2
 
-nno <expr><unique> +d  comment#duplicate#main()
-nno <expr><unique> +dd comment#duplicate#main() .. '_'
-xno <expr><unique> +d  comment#duplicate#main()
+nnoremap <expr><unique> +d  comment#duplicate#main()
+nnoremap <expr><unique> +dd comment#duplicate#main() .. '_'
+xnoremap <expr><unique> +d  comment#duplicate#main()
 
 # comment half a block {{{2
 
 # Useful when we  debug an issue and try  to reduce a custom vimrc  to a minimum
 # amount of lines.
-nno <expr><unique> gct comment#half#setup('top')
-nno <expr><unique> gcb comment#half#setup('bottom')
+nnoremap <expr><unique> gct comment#half#setup('top')
+nnoremap <expr><unique> gcb comment#half#setup('bottom')
 
 # motion {{{2
 

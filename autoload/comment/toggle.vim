@@ -149,7 +149,7 @@ def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
 
     # fire a custom event to allow us executing a callback after (un)commenting some text
     if exists('#User#CommentTogglePost')
-        do <nomodeline> User CommentTogglePost
+        doautocmd <nomodeline> User CommentTogglePost
     endif
 
     return ''

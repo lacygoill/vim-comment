@@ -29,7 +29,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
     #    - the current line matches
     #    - we want to ignore this match
     #
-    # `norm! 1|` + no `c` flag in search() = no match  ✔
+    # `normal! 1|` + no `c` flag in search() = no match  ✔
     #}}}
     # Why not in operator-pending mode?{{{
     #
@@ -40,7 +40,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
     # For Vim, `1|` will be the object, and `123G` just a simple motion.
     # That's not what we want.
     #}}}
-    seq ..= mode =~ "[nvV\<c-v>]"
+    seq ..= mode =~ "[nvV\<C-V>]"
         ?     '1|'
         :     ''
 
@@ -58,7 +58,7 @@ def comment#motion#main(is_fwd = true): string #{{{2
 
     if mode == 'n'
         seq ..= 'zMzv'
-    elseif mode =~ "^[vV\<c-v>]$"
+    elseif mode =~ "^[vV\<C-V>]$"
         # don't close fold in visual mode,
         # it makes Vim select whole folds instead of some part of them
         seq ..= 'zv'

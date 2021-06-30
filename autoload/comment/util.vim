@@ -47,9 +47,9 @@ def comment#util#maybeTrimCml( #{{{1
         return [l, r]
     endif
 
-    # don't break `:h line-continuation-comment` when commenting a line starting
-    # with a backslash (i.e. don't insert a space between the comment leader and
-    # the backslash)
+    # don't  break  `:help  line-continuation-comment` when  commenting  a  line
+    # starting with a  backslash (i.e. don't insert a space  between the comment
+    # leader and the backslash)
     if &filetype == 'vim' && line =~ '^\s*\\ ' && l_ =~ '"'
         return ['"', '']
     endif

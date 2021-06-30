@@ -34,7 +34,7 @@ def Do(_) #{{{2
     else
         [lnum1, lnum2] = [last_lnum - diff / 2 + 1, last_lnum]
     endif
-    exe ':' .. lnum1 .. ',' .. lnum2 .. 'CommentToggle'
+    execute ':' .. lnum1 .. ',' .. lnum2 .. 'CommentToggle'
     # position cursor on first/last line of the remaining uncommented block of lines
     cursor(half == 'top' ? lnum2 : lnum1, 1)
 enddef

@@ -71,9 +71,9 @@ def comment#object#main(op_is_c = false) #{{{1
     endif
 
     # position the cursor on the 1st line of the object
-    exe 'norm! ' .. boundaries[0] .. 'G'
+    execute 'normal! ' .. boundaries[0] .. 'G'
 
     # select the object
-    exe 'norm! ' .. (mode() =~ "[vV\<c-v>]" ? 'o' : 'V') .. boundaries[1] .. 'G'
+    execute 'normal! ' .. (mode() =~ "[vV\<C-V>]" ? 'o' : 'V') .. boundaries[1] .. 'G'
 enddef
 

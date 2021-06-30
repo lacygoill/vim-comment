@@ -45,7 +45,7 @@ def Do(_) #{{{2
             #     var bufnr: number
             #     try
             #         &l:wrap = false
-            #         exe "norm! '[V']\<c-v>0o$A˜"
+            #         execute "normal! '[V']\<C-V>0o$A˜"
             #     finally
             #         if winbufnr(winid) == bufnr
             #             var tabnr: number
@@ -70,15 +70,15 @@ def Do(_) #{{{2
             #     setreg(v:register, reginfo)
             #}}}
 
-            # Do *not* use this `norm! '[V']A˜`!{{{
+            # Do *not* use this `normal! '[V']A˜`!{{{
             #
             # This sequence  of keys works  in an interactive usage,  because of
-            # our custom  mapping `x_A`, but  it would fail with  `:norm!` (note
+            # our custom mapping `x_A`, but  it would fail with `:normal!` (note
             # the bang).
-            # It  would probably  work with  `:norm` though,  although it  would
+            # It would  probably work with  `:normal` though, although  it would
             # still fail on a long wrapped line (see next comment).
             #}}}
-            #     nor this `exe "norm! '[V']\<c-v>0o$A˜"`!{{{
+            #     nor this `execute "normal! '[V']\<C-V>0o$A˜"`!{{{
             #
             # This is better, because it doesn't rely on any custom mapping.
             #
@@ -89,14 +89,14 @@ def Do(_) #{{{2
             #
             # MWE:
             #
-            #     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setl wrap' +'exe "norm! 1GV+\<c-v>0o$A˜"'
+            #     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setlocal wrap' +'execute "normal! 1GV+\<C-V>0o$A˜"'
             #
-            # The explanation of this behavior may be given at `:h v_b_A`.
+            # The explanation of this behavior may be given at `:help v_b_A`.
             # Anyway, with a long wrapped line,  it's possible that the block is
             # defined in a weird way.
             #}}}
-            sil keepj keepp :'[,'] g/^/norm! A˜
-            sil keepj keepp :'[,'] g/^˜$/s/˜//
+            silent keepjumps keeppatterns :'[,'] global/^/normal! A˜
+            silent keepjumps keeppatterns :'[,'] global/^˜$/ substitute/˜//
         endif
     else
         var l: string
@@ -116,9 +116,9 @@ def Do(_) #{{{2
         end = line("']")
         var range: string = ':' .. start .. ',' .. end
         # comment
-        exe range .. 'CommentToggle'
+        execute range .. 'CommentToggle'
         # I don't like empty non-commented line in "the middle of a multi-line comment.
-        exe 'sil keepj keepp ' .. range .. 'g/^$/CommentEmptyLine()'
+        execute 'silent keepjumps keeppatterns ' .. range .. 'global/^$/CommentEmptyLine()'
         # If `>cp` is pressed, increase the indentation of the text *after* the comment leader.{{{
         #
         # This lets us  paste some code and  highlight it as a  codeblock in one
@@ -141,11 +141,11 @@ def Do(_) #{{{2
             # `&l:shiftwidth` and the latter was not 4 (e.g. it could be 2).
             #}}}
             var rep: string = repeat(' ', 4 * cnt)
-            exe 'sil keepj keepp ' .. range .. 's/' .. pat .. '/' .. rep .. '/e'
+            execute 'silent keepjumps keeppatterns ' .. range .. 'substitute/' .. pat .. '/' .. rep .. '/e'
         endif
     endif
     if how_to_indent != '' && how_to_indent != '>'
-        exe 'norm! ' .. start .. 'G' .. how_to_indent .. end .. 'G'
+        execute 'normal! ' .. start .. 'G' .. how_to_indent .. end .. 'G'
     endif
     &l:foldenable = foldenable_save
     winrestview(view)
@@ -159,13 +159,13 @@ def Paste() #{{{2
     getreginfo(v:register)
         ->extend({regtype: 'l'})
         ->setreg(v:register)
-    exe 'norm! "' .. v:register .. where .. 'p'
+    execute 'normal! "' .. v:register .. where .. 'p'
 enddef
 
 def CommentEmptyLine() #{{{2
-    exe "norm! i\<c-v>\<c-a>"
+    execute "normal! i\<C-V>\<C-A>"
     CommentToggle
-    norm! ==
-    s/\s*\%x01//e
+    normal! ==
+    substitute/\s*\%x01//e
 enddef
 
