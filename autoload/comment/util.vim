@@ -1,16 +1,6 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
-import IsVim9 from 'lg.vim'
-
 def comment#util#getCml(): list<string> #{{{1
-    # handle Vim9 comments
-    if IsVim9()
-        return ['# ', '']
-    endif
-
     # This function should return a list of 2 strings:
     #
     #    - the beginning of a comment string; e.g. for vim:    `" `
@@ -18,7 +8,7 @@ def comment#util#getCml(): list<string> #{{{1
 
     return &commentstring
         # make sure there's a space between the comment leader and the comment:
-        #         "%s   →   " %s
+        #         #%s   →   # %s
         # more readable
         ->substitute('\S\zs\ze%s', ' ', '')
         # make sure there's a space between the comment and the end-comment leader

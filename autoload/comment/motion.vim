@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Interface {{{1
 def comment#motion#main(is_fwd = true): string #{{{2
     # This function positions the cursor on the next/previous beginning of a comment.

@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Declarations {{{1
 
 var where: string
@@ -59,7 +56,7 @@ def Do(_) #{{{2
             #
             #     var reginfo: dict<any> = getreginfo(v:register)
             #     var contents: list<string> = get(reginfo, 'regcontents', [])
-            #         ->map((_, v: string): string => v->substitute('$', '˜', ''))
+            #         ->map((_, v: string) => v->substitute('$', '˜', ''))
             #     deepcopy(reginfo)
             #         ->extend({regcontents: contents, regtype: 'l'})
             #         ->setreg(v:register)
@@ -77,23 +74,6 @@ def Do(_) #{{{2
             # the bang).
             # It would  probably work with  `:normal` though, although  it would
             # still fail on a long wrapped line (see next comment).
-            #}}}
-            #     nor this `execute "normal! '[V']\<C-V>0o$A˜"`!{{{
-            #
-            # This is better, because it doesn't rely on any custom mapping.
-            #
-            # But, it would still fail on a long line wrapped onto more than one
-            # screen line; that is, `˜` would not be appended at the very end of
-            # the line, but a few characters  before; the more screen lines, the
-            # more characters before the end.
-            #
-            # MWE:
-            #
-            #     $ vim +'put =repeat(\"a\", winwidth(0) - 5) .. \"-aaa\nb\"' +'setlocal wrap' +'execute "normal! 1GV+\<C-V>0o$A˜"'
-            #
-            # The explanation of this behavior may be given at `:help v_b_A`.
-            # Anyway, with a long wrapped line,  it's possible that the block is
-            # defined in a weird way.
             #}}}
             silent keepjumps keeppatterns :'[,'] global/^/normal! A˜
             silent keepjumps keeppatterns :'[,'] global/^˜$/ substitute/˜//

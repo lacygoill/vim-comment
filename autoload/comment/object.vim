@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 def comment#object#main(op_is_c = false) #{{{1
     if &l:commentstring == ''
         return

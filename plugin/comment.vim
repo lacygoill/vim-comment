@@ -65,6 +65,8 @@ nnoremap <expr><unique> gcb comment#half#setup('bottom')
 
 # motion {{{2
 
-noremap <expr><unique> ]" comment#motion#main()
-noremap <expr><unique> [" comment#motion#main(v:false)
+map <unique> ]" <Plug>(next-comment)
+map <unique> [" <Plug>(prev-comment)
+noremap <expr> <Plug>(next-comment) comment#motion#main()
+noremap <expr> <Plug>(prev-comment) comment#motion#main(v:false)
 

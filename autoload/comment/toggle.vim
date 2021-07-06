@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Interface {{{1
 def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
     if empty(&l:commentstring)
@@ -114,27 +111,27 @@ def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
             # Select these lines:
             #
             #     echo ''
-            #         " foo
-            #         "
-            #         " bar
+            #         # foo
+            #         #
+            #         # bar
             #
             # Comment them by pressing `gc`.
             #
-            # Result:
+            # Actual:
             #
-            #     " echo ''
-            #     "      " foo
-            #     "     "
-            #     "      " bar
+            #     # echo ''
+            #     #      # foo
+            #     #     #
+            #     #      # bar
             #
             # Notice  how the  comment leader  on the  third line  is misaligned
             # compared to the other ones.
             # We want this instead:
             #
-            #     " echo ''
-            #     "      " foo
-            #     "      "
-            #     "      " bar
+            #     # echo ''
+            #     #      # foo
+            #     #      #
+            #     #      # bar
             #}}}
             if line =~ '^\s*' .. l .. '$'
                 l ..= ' '
