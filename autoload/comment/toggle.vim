@@ -47,7 +47,7 @@ def comment#toggle#main(argone: any = '', argtwo = 0): string #{{{2
     var indent: string = getline(lnum1)->matchstr('^\s*')
 
     var new_lines: list<string>
-    for lnum in range(lnum1, lnum2)
+    for lnum: number in range(lnum1, lnum2)
         var line: string = getline(lnum)
 
         # don't change anything if the line is empty
@@ -160,7 +160,7 @@ def DoWeUncomment(
     r_: string
 ): bool
 
-    for lnum in range(lnum1, lnum2)
+    for lnum: number in range(lnum1, lnum2)
         var line: string = getline(lnum)
         # if needed for the current line, trim the comment leader
         var l: string

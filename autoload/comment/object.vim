@@ -12,7 +12,7 @@ def comment#object#main(op_is_c = false) #{{{1
 
     #       ┌ 0 or 1:  upper or lower boundary
     #       │
-    for  [which, dir, limit, next_line]
+    for  [which: number, dir: number, limit: number, next_line: string]
     in  [[0, -1, 1, getline('.')],
          [1, 1, line('$'), getline('.')]]
 
